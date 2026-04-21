@@ -3,16 +3,34 @@ import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } fr
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterOutlet } from '@angular/router';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-root',
-  imports: [MatIconModule, ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, MatIconModule, DragDropModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  private fb = inject(FormBuilder);
+ private fb = inject(FormBuilder);
+
+  layoutOptions = signal([
+    { id: 'header', label: 'Order ID' },
+    { id: 'customer', label: 'Customer Info' },
+    { id: 'metrics', label: 'Metrics (Time/Date)' },
+    { id: 'branding', label: 'Branding (Powered by)' },
+    { id: 'subtotals', label: 'Subtotal & Tax' },
+    { id: 'total', label: 'Total Amount' },
+    { id: 'provider', label: 'Provider Info' },
+    { id: 'items', label: 'Items List' },
+    { id: 'orderClass', label: 'Order Type' }
+  ]);
+
+  dropSection(event: CdkDragDrop<{id: string, label: string}[]>) {
+    const newArr = [...this.layoutOptions()];
+    moveItemInArray(newArr, event.previousIndex, event.currentIndex);
+    this.layoutOptions.set(newArr);
+  }
 
   form: FormGroup = this.fb.group({
     labelSize: ['continuous'],
@@ -173,62 +191,50 @@ export class App {
       itemsString += '[LEFT]';
     }
 
-    return `[INIT]
-ESC @
-${data.labelSize !== 'continuous' ? `\n[LABEL CONFIG]\nSIZE: ${data.labelSize} inches\n` : ''}
-${this.getEscPosAlign('id')}
-DOUBLE HEIGHT + DOUBLE WIDTH
-${this.getEscPosBoldText('id', '#' + data.id)}
+    let payload = `[INIT]\nESC @\n`;
+    if (data.labelSize !== 'continuous') {
+      payload += `[LABEL CONFIG]\nSIZE: ${data.labelSize} inches\n\n`;
+    }
 
-[NORMAL SIZE]
---------------------------------
+    const sections = this.layoutOptions();
+    sections.forEach((section, index) => {
+      switch(section.id) {
+        case 'header':
+          payload += `${this.getEscPosAlign('id')}\nDOUBLE HEIGHT + DOUBLE WIDTH\n${this.getEscPosBoldText('id', '#' + data.id)}\n\n[NORMAL SIZE]\n`;
+          break;
+        case 'customer':
+          payload += `${this.getEscPosAlign('customerPhone')}\n${this.getEscPosBoldText('customerPhone', data.customerPhone)}\n${this.getEscPosAlign('customerName')}\n${this.getEscPosBoldText('customerName', data.customerName)}\n`;
+          break;
+        case 'metrics':
+          payload += `${this.getEscPosAlign('itemIndex')}\n${this.getEscPosBoldText('itemIndex', 'Item: ' + data.itemIndex + ' of ' + data.itemCount)}\n${this.getEscPosAlign('createdTime')}\n${this.getEscPosBoldText('createdTime', 'Time: ' + data.createdTime)}\n${this.getEscPosAlign('createdDate')}\n${this.getEscPosBoldText('createdDate', 'Date: ' + data.createdDate)}\n`;
+          break;
+        case 'branding':
+          payload += `[CENTER]\nPowered by Plum POS\n`;
+          break;
+        case 'subtotals':
+          payload += `${this.getEscPosAlign('total')}\n${this.getEscPosBoldText('total', 'Subtotal : $' + this.formatCurrency(data.subtotal) + '\\nTax      : $' + this.formatCurrency(data.tax) + '\\nDelv Chg : $' + this.formatCurrency(data.deliveryFee))}\n`;
+          break;
+        case 'total':
+          payload += `${this.getEscPosAlign('total')}\n[BIG FONT ON]\n${this.getEscPosBoldText('total', 'TOTAL: $' + this.formatCurrency(total))}\n[BIG FONT OFF]\n`;
+          break;
+        case 'provider':
+          payload += `${this.getEscPosAlign('onlineProvider')}\n${this.getEscPosBoldText('onlineProvider', data.onlineProvider)} - ${this.getEscPosBoldText('onlineId', data.onlineId)}\n`;
+          break;
+        case 'items':
+          payload += `[LEFT]\nITEMS:${itemsString}\n`;
+          break;
+        case 'orderClass':
+          payload += `${this.getEscPosAlign('orderClass')}\n${this.getEscPosBoldText('orderClass', 'ORDER TYPE: ' + data.orderClass)}\n`;
+          break;
+      }
 
-${this.getEscPosAlign('customerPhone')}
-${this.getEscPosBoldText('customerPhone', data.customerPhone)}
-${this.getEscPosAlign('customerName')}
-${this.getEscPosBoldText('customerName', data.customerName)}
+      if (index < sections.length - 1) {
+        payload += `--------------------------------\n\n`;
+      }
+    });
 
---------------------------------
-
-${this.getEscPosAlign('itemIndex')}
-${this.getEscPosBoldText('itemIndex', 'Item: ' + data.itemIndex + ' of ' + data.itemCount)}
-${this.getEscPosAlign('createdTime')}
-${this.getEscPosBoldText('createdTime', 'Time: ' + data.createdTime)}
-${this.getEscPosAlign('createdDate')}
-${this.getEscPosBoldText('createdDate', 'Date: ' + data.createdDate)}
-
-[CENTER]
-Powered by Plum POS
-
---------------------------------
-
-${this.getEscPosAlign('total')}
-${this.getEscPosBoldText('total', 'Subtotal : $' + this.formatCurrency(data.subtotal) + '\\nTax      : $' + this.formatCurrency(data.tax) + '\\nDelv Chg : $' + this.formatCurrency(data.deliveryFee))}
-
---------------------------------
-
-${this.getEscPosAlign('total')}
-[BIG FONT ON]
-${this.getEscPosBoldText('total', 'TOTAL: $' + this.formatCurrency(total))}
-[BIG FONT OFF]
-
---------------------------------
-
-${this.getEscPosAlign('onlineProvider')}
-${this.getEscPosBoldText('onlineProvider', data.onlineProvider)} - ${this.getEscPosBoldText('onlineId', data.onlineId)}
-
---------------------------------
-
-[LEFT]
-ITEMS:${itemsString}
---------------------------------
-
-${this.getEscPosAlign('orderClass')}
-${this.getEscPosBoldText('orderClass', 'ORDER TYPE: ' + data.orderClass)}
-
-[FEED + CUT]
-ESC d 3
-GS V 1`;
+    payload += `\n[FEED + CUT]\nESC d 3\nGS V 1`;
+    return payload;
   }
 
   handlePrint() {

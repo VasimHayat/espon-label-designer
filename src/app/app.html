@@ -1,4 +1,4 @@
- <div class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[400px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
+<div class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[400px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
       
       <!-- HEADER matching theme -->
       <header class="md:col-span-2 bg-[#1E293B] text-white flex items-center px-6 justify-between h-[60px] shadow-sm z-10 w-full shrink-0">
@@ -55,6 +55,16 @@
               </div>
             </div>
 
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Receipt Layout Overview</div>
+            <div cdkDropList class="list-none p-0 m-0 space-y-[8px] mb-[16px]" (cdkDropListDropped)="dropSection($event)">
+              @for (section of layoutOptions(); track section.id) {
+                <div cdkDrag class="bg-white border border-[#CBD5E1] rounded-[4px] p-[10px] flex items-center gap-[10px] cursor-move shadow-sm hover:shadow-md transition-shadow">
+                  <mat-icon class="text-[#94A3B8] cursor-grab">drag_indicator</mat-icon>
+                  <span class="text-[13px] text-[#334155] font-medium">{{ section.label }}</span>
+                </div>
+              }
+            </div>
+
             <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Order Information</div>
 
             <div class="form-group block mb-[16px]">
@@ -81,9 +91,7 @@
                 <input type="number" formControlName="itemIndex" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
               </div>
               <div class="form-group block">
-                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Item Count 
-                  <!-- <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'itemCount'}"></ng-container> -->
-                </label>
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Item Count <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'itemCount'}"></ng-container></label>
                 <input type="number" formControlName="itemCount" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
               </div>
             </div>
@@ -222,64 +230,68 @@
                [class.overflow-hidden]="formData().labelSize !== 'continuous'"
                [class.overflow-y-auto]="formData().labelSize === 'continuous'">
             
-            <div class="text-[24px] mb-[5px] w-full" [ngClass]="[getAlignClass('id'), getBoldClass('id')]">#{{ formData().id }}</div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full" [ngClass]="[getAlignClass('customerPhone'), getBoldClass('customerPhone')]">{{ formData().customerPhone }}</div>
-            <div class="w-full" [ngClass]="[getAlignClass('customerName'), getBoldClass('customerName')]">{{ formData().customerName }}</div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full" [ngClass]="[getAlignClass('itemIndex'), getBoldClass('itemIndex')]">Item: {{ formData().itemIndex }} of {{ formData().itemCount }}</div>
-            <div class="w-full" [ngClass]="[getAlignClass('createdTime'), getBoldClass('createdTime')]">Time: {{ formData().createdTime }}</div>
-            <div class="w-full" [ngClass]="[getAlignClass('createdDate'), getBoldClass('createdDate')]">Date: {{ formData().createdDate }}</div>
-            
-            <div class="my-[10px] text-center">Powered by Plum POS</div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
-              Subtotal : {{ formData().subtotal | currency:'USD':'symbol':'1.2-2' }}<br>
-              Tax&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ formData().tax | currency:'USD':'symbol':'1.2-2' }}<br>
-              Delv Chg : {{ formData().deliveryFee | currency:'USD':'symbol':'1.2-2' }}
-            </div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="text-[20px] my-[10px] w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
-              TOTAL: {{ calculatedTotal() | currency:'USD':'symbol':'1.2-2' }}
-            </div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full" [ngClass]="[getAlignClass('onlineProvider'), getBoldClass('onlineProvider')]">{{ formData().onlineProvider }} - {{ formData().onlineId }}</div>
-            
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full">
-              <div>ITEMS:</div>
-              <div class="mt-[10px] flex flex-col gap-[15px] w-full">
-                @for (item of formData().items; track $index) {
-                  <div [ngClass]="{
-                    'text-left': item.align === 'left' || !item.align,
-                    'text-center': item.align === 'center',
-                    'text-right': item.align === 'right'
-                  }" class="w-full">
-                    <div [ngClass]="item.isBold === false ? 'font-normal' : 'font-[800]'">{{ item.itemName }}</div>
-                    @if (item.modifiers) {
-                      <div class="whitespace-pre-line mt-[2px]" [ngClass]="item.isBold === false ? 'font-normal' : 'font-bold'">{{ item.modifiers }}</div>
-                    }
+            @for (section of layoutOptions(); track section.id; let last = $last) {
+              @switch (section.id) {
+                @case ('header') {
+                  <div class="text-[24px] mb-[5px] w-full" [ngClass]="[getAlignClass('id'), getBoldClass('id')]">#{{ formData().id }}</div>
+                }
+                @case ('customer') {
+                  <div class="w-full" [ngClass]="[getAlignClass('customerPhone'), getBoldClass('customerPhone')]">{{ formData().customerPhone }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('customerName'), getBoldClass('customerName')]">{{ formData().customerName }}</div>
+                }
+                @case ('metrics') {
+                  <div class="w-full" [ngClass]="[getAlignClass('itemIndex'), getBoldClass('itemIndex')]">Item: {{ formData().itemIndex }} of {{ formData().itemCount }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('createdTime'), getBoldClass('createdTime')]">Time: {{ formData().createdTime }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('createdDate'), getBoldClass('createdDate')]">Date: {{ formData().createdDate }}</div>
+                }
+                @case ('branding') {
+                  <div class="my-[10px] text-center">Powered by Plum POS</div>
+                }
+                @case ('subtotals') {
+                  <div class="w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
+                    Subtotal : {{ formData().subtotal | currency:'USD':'symbol':'1.2-2' }}<br>
+                    Tax&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ formData().tax | currency:'USD':'symbol':'1.2-2' }}<br>
+                    Delv Chg : {{ formData().deliveryFee | currency:'USD':'symbol':'1.2-2' }}
                   </div>
                 }
-              </div>
-            </div>
+                @case ('total') {
+                  <div class="text-[20px] my-[10px] w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
+                    TOTAL: {{ calculatedTotal() | currency:'USD':'symbol':'1.2-2' }}
+                  </div>
+                }
+                @case ('provider') {
+                  <div class="w-full" [ngClass]="[getAlignClass('onlineProvider'), getBoldClass('onlineProvider')]">{{ formData().onlineProvider }} - {{ formData().onlineId }}</div>
+                }
+                @case ('items') {
+                  <div class="w-full">
+                    <div>ITEMS:</div>
+                    <div class="mt-[10px] flex flex-col gap-[15px] w-full">
+                      @for (item of formData().items; track $index) {
+                        <div [ngClass]="{
+                          'text-left': item.align === 'left' || !item.align,
+                          'text-center': item.align === 'center',
+                          'text-right': item.align === 'right'
+                        }" class="w-full">
+                          <div [ngClass]="item.isBold === false ? 'font-normal' : 'font-[800]'">{{ item.itemName }}</div>
+                          @if (item.modifiers) {
+                            <div class="whitespace-pre-line mt-[2px]" [ngClass]="item.isBold === false ? 'font-normal' : 'font-bold'">{{ item.modifiers }}</div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+                @case ('orderClass') {
+                  <div class="w-full" [ngClass]="[getAlignClass('orderClass'), getBoldClass('orderClass')]">ORDER TYPE: {{ formData().orderClass }}</div>
+                }
+              }
+              
+              @if (!last) {
+                <div class="border-t border-dashed border-[#000] my-[15px]"></div>
+              }
+            }
             
-            <div class="border-t border-dashed border-[#000] my-[15px]"></div>
-            
-            <div class="w-full" [ngClass]="[getAlignClass('orderClass'), getBoldClass('orderClass')]">ORDER TYPE: {{ formData().orderClass }}</div>
-            
-            <div class="mt-[20px] text-[10px] opacity-50 text-center">[CUT SENSOR LINE]</div>
+            <div class="mt-[20px] text-[10px] opacity-50 text-center mt-auto flex-shrink-0">[CUT SENSOR LINE]</div>
           </div>
         } @else {
           <div class="bg-[#1e1e1e] border-l-4 border-[#2563EB] text-[#d4d4d4] rounded-lg shadow-2xl p-6 w-[480px] font-mono text-[13px] leading-relaxed whitespace-pre items-start mx-auto mb-auto relative group">
