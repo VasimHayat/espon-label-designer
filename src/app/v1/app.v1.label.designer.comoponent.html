@@ -1,0 +1,320 @@
+ <div class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[400px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
+      
+      <!-- HEADER matching theme -->
+      <header class="md:col-span-2 bg-[#1E293B] text-white flex items-center px-6 justify-between h-[60px] shadow-sm z-10 w-full shrink-0">
+        <h1 class="text-[18px] font-[600] tracking-[0.05em] flex items-center gap-[10px] m-0">
+          <span>EPSON</span> Label Designer 
+          <span class="bg-[#10B981] px-[10px] py-[4px] rounded-full text-[10px] uppercase font-bold text-white leading-none">Connected: TM-L90</span>
+        </h1>
+        <div class="flex gap-[15px] items-center">
+          <span class="text-[12px] opacity-80 hidden sm:inline">Template: Plum POS Standard</span>
+          <div class="w-[32px] h-[32px] bg-[#334155] rounded-full flex items-center justify-center">
+             <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">print</mat-icon>
+          </div>
+        </div>
+      </header>
+
+      <!-- LEFT PANEL: Editor -->
+      <aside class="bg-[#F8FAFC] border-r border-[#CBD5E1] p-[20px] overflow-y-auto md:row-start-2 md:col-start-1 h-full">
+        <div class="max-w-xl mx-auto">
+          
+          <form [formGroup]="form" class="space-y-[16px]">
+            <ng-template #formatToolbar let-field="field">
+              <div class="flex items-center gap-[4px]" (pointerdown)="$event.preventDefault(); $event.stopPropagation()">
+                <div class="flex bg-white border border-[#CBD5E1] rounded-[3px] overflow-hidden">
+                  <button type="button" tabindex="-1" (click)="setFormat(field, 'align', 'left')" [ngClass]="{'bg-[#cbd5e1] shadow-inner': getFormat(field, 'align') === 'left' || !getFormat(field, 'align')}" class="px-[4px] py-[2px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-r border-[#CBD5E1] border-t-0 border-b-0 border-l-0 cursor-pointer flex items-center justify-center">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">format_align_left</mat-icon>
+                  </button>
+                  <button type="button" tabindex="-1" (click)="setFormat(field, 'align', 'center')" [ngClass]="{'bg-[#cbd5e1] shadow-inner': getFormat(field, 'align') === 'center'}" class="px-[4px] py-[2px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-r border-[#CBD5E1] border-t-0 border-b-0 border-l-0 cursor-pointer flex items-center justify-center">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">format_align_center</mat-icon>
+                  </button>
+                  <button type="button" tabindex="-1" (click)="setFormat(field, 'align', 'right')" [ngClass]="{'bg-[#cbd5e1] shadow-inner': getFormat(field, 'align') === 'right'}" class="px-[4px] py-[2px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-none cursor-pointer flex items-center justify-center">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">format_align_right</mat-icon>
+                  </button>
+                </div>
+                <button type="button" tabindex="-1" (click)="setFormat(field, 'isBold', !getFormat(field, 'isBold'))" [ngClass]="{'bg-[#cbd5e1] shadow-inner': getFormat(field, 'isBold') !== false, 'bg-white': getFormat(field, 'isBold') === false}" class="px-[4px] py-[2px] text-[#475569] border border-[#CBD5E1] rounded-[3px] hover:bg-[#F8FAFC] transition-colors cursor-pointer flex items-center justify-center">
+                  <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">format_bold</mat-icon>
+                </button>
+              </div>
+            </ng-template>
+            
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-2">Printer Settings</div>
+
+            <div class="grid grid-cols-1 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Label Size</label>
+                <select formControlName="labelSize" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors cursor-pointer">
+                  <option value="continuous">Continuous Receipt (80mm Width)</option>
+                  <option value="4x6">4" x 6" (Standard Shipping)</option>
+                  <option value="4x4">4" x 4"</option>
+                  <option value="4x2">4" x 2"</option>
+                  <option value="3x2">3" x 2"</option>
+                  <option value="2x4">2" x 4"</option>
+                  <option value="2x1">2" x 1"</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mt-6 mb-[8px]">
+              <div class="text-[11px] text-[#64748B] uppercase font-[700] tracking-wide m-0">Receipt Layout Overview</div>
+              <label class="flex items-center cursor-pointer" title="Enable Custom Layout">
+                <input type="checkbox" formControlName="enableCustomLayout" class="sr-only">
+                <div class="relative w-[34px] h-[18px] bg-[#CBD5E1] rounded-full transition-colors duration-200" [ngClass]="{'!bg-[#2563EB]': formData()?.enableCustomLayout}">
+                  <div class="absolute left-[2px] top-[2px] bg-white w-[14px] h-[14px] rounded-full transition-transform duration-200 shadow-sm" [ngClass]="{'translate-x-[16px]': formData()?.enableCustomLayout}"></div>
+                </div>
+              </label>
+            </div>
+            
+            @if (formData()?.enableCustomLayout) {
+              <div cdkDropList class="list-none p-0 m-0 space-y-[8px] mb-[16px]" (cdkDropListDropped)="dropSection($event)">
+                @for (section of layoutOptions(); track section.id) {
+                  <div cdkDrag class="bg-white border border-[#CBD5E1] rounded-[4px] p-[10px] flex items-center gap-[10px] cursor-move shadow-sm hover:shadow-md transition-shadow">
+                    <mat-icon class="text-[#94A3B8] cursor-grab">drag_indicator</mat-icon>
+                    <span class="text-[13px] text-[#334155] font-medium">{{ section.label }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Order Information</div>
+
+            <div class="form-group block mb-[16px]">
+              <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Order ID <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'id'}"></ng-container></label>
+              <input type="text" formControlName="id" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Customer Name <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'customerName'}"></ng-container></label>
+                <input type="text" formControlName="customerName" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Phone <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'customerPhone'}"></ng-container></label>
+                <input type="text" formControlName="customerPhone" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+            </div>
+
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Metrics & Metadata</div>
+            
+            <div class="grid grid-cols-2 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Item Index <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'itemIndex'}"></ng-container></label>
+                <input type="number" formControlName="itemIndex" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Item Count <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'itemCount'}"></ng-container></label>
+                <input type="number" formControlName="itemCount" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Time <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'createdTime'}"></ng-container></label>
+                <input type="text" formControlName="createdTime" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Date <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'createdDate'}"></ng-container></label>
+                <input type="text" formControlName="createdDate" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+            </div>
+
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6 flex justify-between items-center w-full">Totals <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'total'}"></ng-container></div>
+
+            <div class="grid grid-cols-3 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Subtotal</label>
+                <input type="number" formControlName="subtotal" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" step="0.01" />
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Tax</label>
+                <input type="number" formControlName="tax" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" step="0.01" />
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Delv Chg</label>
+                <input type="number" formControlName="deliveryFee" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" step="0.01" />
+              </div>
+            </div>
+
+            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6 flex justify-between items-center w-full">Provider & Class</div>
+            <div class="grid grid-cols-2 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Provider <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'onlineProvider'}"></ng-container></label>
+                <select formControlName="onlineProvider" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors">
+                  <option>DoorDash</option>
+                  <option>UberEats</option>
+                  <option>GrubHub</option>
+                </select>
+              </div>
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Provider ID <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'onlineId'}"></ng-container></label>
+                <input type="text" formControlName="onlineId" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-[12px] mb-[16px]">
+              <div class="form-group block">
+                <label class="text-[12px] text-[#334155] mb-[4px] flex justify-between items-center font-medium">Order Class <ng-container *ngTemplateOutlet="formatToolbar; context: {field: 'orderClass'}"></ng-container></label>
+                <input type="text" formControlName="orderClass" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mt-[24px] mb-[8px]">
+               <div class="text-[11px] text-[#64748B] uppercase font-[700] tracking-wide m-0">Item Details</div>
+               <button type="button" (click)="addItem()" class="text-[#2563EB] text-[12px] font-medium flex items-center gap-1 hover:underline cursor-pointer bg-transparent border-none p-0">
+                  <mat-icon class="!text-[14px] !w-[14px] !h-[14px] leading-none">add</mat-icon> Add Item
+               </button>
+            </div>
+
+            <div formArrayName="items" class="space-y-[12px] mb-[16px]">
+              @for (item of itemsFormArray.controls; track item; let i = $index) {
+                <div [formGroupName]="i" class="bg-[#F1F5F9] border border-[#CBD5E1] p-[12px] rounded-[6px] relative">
+                  
+                  <div class="flex justify-between items-center mb-[8px]">
+                    <span class="text-[11px] font-[600] text-[#475569]">ITEM {{i + 1}}</span>
+                    <div class="flex items-center gap-2">
+                       <button type="button" (click)="copyItem(i)" class="text-[#64748B] hover:text-[#2563EB] bg-transparent border-none p-0 cursor-pointer flex items-center justify-center transition-colors" title="Duplicate Item">
+                         <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">content_copy</mat-icon>
+                       </button>
+                       @if (itemsFormArray.length > 1) {
+                         <button type="button" (click)="removeItem(i)" class="text-[#64748B] hover:text-red-500 bg-transparent border-none p-0 cursor-pointer flex items-center justify-center transition-colors" title="Remove Item">
+                           <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">delete</mat-icon>
+                         </button>
+                       }
+                    </div>
+                  </div>
+
+                  <div class="form-group block mb-[8px]">
+                    <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Item Name</label>
+                    <input type="text" formControlName="itemName" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors" />
+                  </div>
+                  
+                  <div class="form-group block mb-[8px]">
+                    <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Modifiers</label>
+                    <textarea formControlName="modifiers" style="height: 60px" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors resize-none"></textarea>
+                  </div>
+
+                  <div class="flex items-center gap-[10px] mt-[12px] pt-[12px] border-t border-[#CBD5E1]">
+                    <span class="text-[10px] uppercase font-bold text-[#64748B]">Format:</span>
+                    
+                    <div class="flex bg-white border border-[#CBD5E1] rounded-[4px] overflow-hidden">
+                      <button type="button" (click)="itemsFormArray.at(i).patchValue({align: 'left'})" [ngClass]="{'bg-[#E2E8F0] shadow-inner': formData().items[i]?.align === 'left' || !formData().items[i]?.align}" class="px-[8px] py-[4px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-r border-[#CBD5E1] border-t-0 border-b-0 border-l-0 cursor-pointer flex items-center justify-center">
+                        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">format_align_left</mat-icon>
+                      </button>
+                      <button type="button" (click)="itemsFormArray.at(i).patchValue({align: 'center'})" [ngClass]="{'bg-[#E2E8F0] shadow-inner': formData().items[i]?.align === 'center'}" class="px-[8px] py-[4px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-r border-[#CBD5E1] border-t-0 border-b-0 border-l-0 cursor-pointer flex items-center justify-center">
+                        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">format_align_center</mat-icon>
+                      </button>
+                      <button type="button" (click)="itemsFormArray.at(i).patchValue({align: 'right'})" [ngClass]="{'bg-[#E2E8F0] shadow-inner': formData().items[i]?.align === 'right'}" class="px-[8px] py-[4px] text-[#475569] hover:bg-[#F8FAFC] transition-colors border-none cursor-pointer flex items-center justify-center">
+                        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">format_align_right</mat-icon>
+                      </button>
+                    </div>
+
+                    <button type="button" (click)="itemsFormArray.at(i).patchValue({isBold: !(formData().items[i]?.isBold !== false)})" [ngClass]="{'bg-[#E2E8F0] shadow-inner': formData().items[i]?.isBold !== false, 'bg-white': formData().items[i]?.isBold === false}" class="px-[8px] py-[4px] text-[#475569] border border-[#CBD5E1] rounded-[4px] hover:bg-[#F8FAFC] transition-colors cursor-pointer flex items-center justify-center">
+                      <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">format_bold</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="flex gap-[10px] mt-[20px] pb-[40px]">
+              <button type="button" (click)="viewRaw.set(!viewRaw())" class="bg-white border border-[#CBD5E1] text-[#1e293b] rounded-[6px] px-[10px] py-[10px] text-[13px] font-[600] w-full transition-colors hover:bg-gray-50 flex items-center justify-center gap-2">
+                <mat-icon class="!text-[18px] !w-[18px] !h-[18px] leading-none">{{ viewRaw() ? 'receipt_long' : 'data_object' }}</mat-icon>
+                {{ viewRaw() ? 'Receipt' : 'Raw Data' }}
+              </button>
+              <button type="button" (click)="handlePrint()" class="bg-[#2563EB] text-white rounded-[6px] px-[12px] py-[10px] text-[13px] font-[600] w-full transition-colors hover:bg-blue-700 flex items-center justify-center gap-2 border-none cursor-pointer">
+                <mat-icon class="!text-[18px] !w-[18px] !h-[18px] leading-none">local_printshop</mat-icon>
+                Print Label
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </aside>
+
+      <!-- RIGHT PANEL: Preview -->
+      <main class="bg-[#E2E8F0] relative overflow-y-auto p-[40px] flex items-center justify-center md:col-start-2 md:row-start-2 h-full w-full">
+        
+        @if (!viewRaw()) {
+          <!-- Theme Receipt Preview -->
+          <div class="bg-[#FFFFFF] shadow-[0_10px_25px_rgba(0,0,0,0.1)] px-[30px] py-[40px] font-['Courier_New',Courier,monospace] text-[#000] text-[14px] leading-[1.4] relative flex flex-col mx-auto mb-auto receipt-top-border transition-all duration-300"
+               [ngStyle]="labelDimensions()"
+               [class.overflow-hidden]="formData().labelSize !== 'continuous'"
+               [class.overflow-y-auto]="formData().labelSize === 'continuous'">
+            
+            @for (section of layoutOptions(); track section.id; let last = $last) {
+              @switch (section.id) {
+                @case ('header') {
+                  <div class="text-[24px] mb-[5px] w-full" [ngClass]="[getAlignClass('id'), getBoldClass('id')]">#{{ formData().id }}</div>
+                }
+                @case ('customer') {
+                  <div class="w-full" [ngClass]="[getAlignClass('customerPhone'), getBoldClass('customerPhone')]">{{ formData().customerPhone }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('customerName'), getBoldClass('customerName')]">{{ formData().customerName }}</div>
+                }
+                @case ('metrics') {
+                  <div class="w-full" [ngClass]="[getAlignClass('itemIndex'), getBoldClass('itemIndex')]">Item: {{ formData().itemIndex }} of {{ formData().itemCount }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('createdTime'), getBoldClass('createdTime')]">Time: {{ formData().createdTime }}</div>
+                  <div class="w-full" [ngClass]="[getAlignClass('createdDate'), getBoldClass('createdDate')]">Date: {{ formData().createdDate }}</div>
+                }
+                @case ('branding') {
+                  <div class="my-[10px] text-center">Powered by Plum POS</div>
+                }
+                @case ('subtotals') {
+                  <div class="w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
+                    Subtotal : {{ formData().subtotal | currency:'USD':'symbol':'1.2-2' }}<br>
+                    Tax&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ formData().tax | currency:'USD':'symbol':'1.2-2' }}<br>
+                    Delv Chg : {{ formData().deliveryFee | currency:'USD':'symbol':'1.2-2' }}
+                  </div>
+                }
+                @case ('total') {
+                  <div class="text-[20px] my-[10px] w-full" [ngClass]="[getAlignClass('total'), getBoldClass('total')]">
+                    TOTAL: {{ calculatedTotal() | currency:'USD':'symbol':'1.2-2' }}
+                  </div>
+                }
+                @case ('provider') {
+                  <div class="w-full" [ngClass]="[getAlignClass('onlineProvider'), getBoldClass('onlineProvider')]">{{ formData().onlineProvider }} - {{ formData().onlineId }}</div>
+                }
+                @case ('items') {
+                  <div class="w-full">
+                    <div>ITEMS:</div>
+                    <div class="mt-[10px] flex flex-col gap-[15px] w-full">
+                      @for (item of formData().items; track $index) {
+                        <div [ngClass]="{
+                          'text-left': item.align === 'left' || !item.align,
+                          'text-center': item.align === 'center',
+                          'text-right': item.align === 'right'
+                        }" class="w-full">
+                          <div [ngClass]="item.isBold === false ? 'font-normal' : 'font-[800]'">{{ item.itemName }}</div>
+                          @if (item.modifiers) {
+                            <div class="whitespace-pre-line mt-[2px]" [ngClass]="item.isBold === false ? 'font-normal' : 'font-bold'">{{ item.modifiers }}</div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+                @case ('orderClass') {
+                  <div class="w-full" [ngClass]="[getAlignClass('orderClass'), getBoldClass('orderClass')]">ORDER TYPE: {{ formData().orderClass }}</div>
+                }
+              }
+              
+              @if (!last) {
+                <div class="border-t border-dashed border-[#000] my-[15px]"></div>
+              }
+            }
+            
+            <div class="mt-[20px] text-[10px] opacity-50 text-center mt-auto flex-shrink-0">[CUT SENSOR LINE]</div>
+          </div>
+        } @else {
+          <div class="bg-[#1e1e1e] border-l-4 border-[#2563EB] text-[#d4d4d4] rounded-lg shadow-2xl p-6 w-[480px] font-mono text-[13px] leading-relaxed whitespace-pre items-start mx-auto mb-auto relative group">
+            <div class="flex items-center justify-between border-b border-[#333] pb-2 mb-4">
+              <div class="text-[#858585] font-[600] uppercase tracking-widest text-[10px]">RAW ESC/POS PAYLOAD</div>
+              <button (click)="copyRawPayload()" class="bg-[#333] text-white hover:bg-[#444] transition-colors rounded-[4px] items-center justify-center flex gap-1 px-2 py-1 text-[10px] uppercase font-bold cursor-pointer border-none focus:outline-none">
+                <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">content_copy</mat-icon> Copy
+              </button>
+            </div>
+            <div class="overflow-x-auto">{{ generateRawPayload() }}</div>
+          </div>
+        }
+      </main>
+
+    </div>
