@@ -1,0 +1,29 @@
+.receipt-top-border::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, #fff, #fff 10px, #000 10px, #000 20px);
+      opacity: 0.1;
+    }
+
+    .pattern-dots {
+      background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
