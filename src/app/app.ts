@@ -12,9 +12,9 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
   styleUrl: './app.scss'
 })
 export class App {
- private fb = inject(FormBuilder);
+   private fb = inject(FormBuilder);
 
-  layoutOptions = signal([
+  defaultLayout = [
     { id: 'header', label: 'Order ID' },
     { id: 'customer', label: 'Customer Info' },
     { id: 'metrics', label: 'Metrics (Time/Date)' },
@@ -24,15 +24,22 @@ export class App {
     { id: 'provider', label: 'Provider Info' },
     { id: 'items', label: 'Items List' },
     { id: 'orderClass', label: 'Order Type' }
-  ]);
+  ];
+
+  layoutState = signal([...this.defaultLayout]);
+
+  layoutOptions = computed(() => {
+    return this.formData()?.enableCustomLayout ? this.layoutState() : this.defaultLayout;
+  });
 
   dropSection(event: CdkDragDrop<{id: string, label: string}[]>) {
-    const newArr = [...this.layoutOptions()];
+    const newArr = [...this.layoutState()];
     moveItemInArray(newArr, event.previousIndex, event.currentIndex);
-    this.layoutOptions.set(newArr);
+    this.layoutState.set(newArr);
   }
 
   form: FormGroup = this.fb.group({
+    enableCustomLayout: [true],
     labelSize: ['continuous'],
     id: ['7829', Validators.required],
     orderClass: ['Delivery'],

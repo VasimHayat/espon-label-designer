@@ -1,4 +1,4 @@
-<div class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[400px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
+ <div class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[400px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
       
       <!-- HEADER matching theme -->
       <header class="md:col-span-2 bg-[#1E293B] text-white flex items-center px-6 justify-between h-[60px] shadow-sm z-10 w-full shrink-0">
@@ -55,15 +55,26 @@
               </div>
             </div>
 
-            <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Receipt Layout Overview</div>
-            <div cdkDropList class="list-none p-0 m-0 space-y-[8px] mb-[16px]" (cdkDropListDropped)="dropSection($event)">
-              @for (section of layoutOptions(); track section.id) {
-                <div cdkDrag class="bg-white border border-[#CBD5E1] rounded-[4px] p-[10px] flex items-center gap-[10px] cursor-move shadow-sm hover:shadow-md transition-shadow">
-                  <mat-icon class="text-[#94A3B8] cursor-grab">drag_indicator</mat-icon>
-                  <span class="text-[13px] text-[#334155] font-medium">{{ section.label }}</span>
+            <div class="flex items-center justify-between mt-6 mb-[8px]">
+              <div class="text-[11px] text-[#64748B] uppercase font-[700] tracking-wide m-0">Receipt Layout Overview</div>
+              <label class="flex items-center cursor-pointer" title="Enable Custom Layout">
+                <input type="checkbox" formControlName="enableCustomLayout" class="sr-only">
+                <div class="relative w-[34px] h-[18px] bg-[#CBD5E1] rounded-full transition-colors duration-200" [ngClass]="{'!bg-[#2563EB]': formData()?.enableCustomLayout}">
+                  <div class="absolute left-[2px] top-[2px] bg-white w-[14px] h-[14px] rounded-full transition-transform duration-200 shadow-sm" [ngClass]="{'translate-x-[16px]': formData()?.enableCustomLayout}"></div>
                 </div>
-              }
+              </label>
             </div>
+            
+            @if (formData()?.enableCustomLayout) {
+              <div cdkDropList class="list-none p-0 m-0 space-y-[8px] mb-[16px]" (cdkDropListDropped)="dropSection($event)">
+                @for (section of layoutOptions(); track section.id) {
+                  <div cdkDrag class="bg-white border border-[#CBD5E1] rounded-[4px] p-[10px] flex items-center gap-[10px] cursor-move shadow-sm hover:shadow-md transition-shadow">
+                    <mat-icon class="text-[#94A3B8] cursor-grab">drag_indicator</mat-icon>
+                    <span class="text-[13px] text-[#334155] font-medium">{{ section.label }}</span>
+                  </div>
+                }
+              </div>
+            }
 
             <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-6">Order Information</div>
 
