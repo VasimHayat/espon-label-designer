@@ -1,138 +1,164 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * Standard ESC/POS portrait, line-by-line
+ * Physical: 4" × 2"  @  203 DPI  =  812 × 406 dots
+ * Preview : 4" × 2"  @  192 DPI  =  768 × 384 px   (2 : 1 ratio)
+ * ───────────────────────────────────────────────────────────────────────── */
+
 .v3-label-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/*
- * Physical: 4" × 2" landscape @ 203 DPI = 812 × 406 dots
- * Screen preview: scaled to 192 DPI effective = 768 × 384 px
- * This gives an accurate 2:1 aspect ratio matching the physical label.
- */
+/* Outer label canvas */
 .v3-label {
-  display: flex;
-  flex-direction: row;
   width: 768px;
   height: 384px;
-  overflow: hidden;
-}
-
-/* Main content area (everything except the right sidebar) */
-.v3-main-content {
   display: flex;
   flex-direction: column;
-  flex: 1;
   overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
 }
 
-/* Shared row styles */
+/* ── Shared row shell ─────────────────────────────────────────────────── */
 .v3-row {
   display: flex;
   flex-direction: row;
+  align-items: stretch;
   flex-shrink: 0;
 }
 
-/*
- * Row heights derived from ESC/POS line counts at 203 DPI:
- * Header row  ~2 double-height lines = ~88px
- * Metrics row ~1 normal line         = ~68px
- * Body row    fills remaining ~228px
- */
+/* ── Section 1: HEADER ───────────────────────────────────────────────── */
+/* Mirrors ESC 3 48 + GS ! 0x01 (double-height, single-width, bold)       */
 .v3-row-header {
-  height: 88px;
+  min-height: 72px;
+  border-bottom: 2px solid black;
 }
 
+/* ID cell */
+.v3-header-id {
+  width: 110px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid black;
+  padding: 0 8px;
+}
+
+/* Phone cell */
+.v3-header-phone {
+  width: 192px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid black;
+  padding: 0 8px;
+}
+
+/* Customer name — fills remaining */
+.v3-header-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+/* ── Section 2: METRICS ──────────────────────────────────────────────── */
+/* Mirrors ESC 3 20 + tab-stop columns                                    */
 .v3-row-metrics {
-  height: 68px;
+  min-height: 40px;
+  border-bottom: 2px solid black;
 }
 
-.v3-row-body {
+.v3-metrics-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  border-right: 2px solid black;
+}
+
+.v3-metrics-branding {
   flex: 1;
   display: flex;
-  flex-direction: row;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
 }
 
-/* Cells in top rows */
-.v3-cell {
+/* ── Section 3: FINANCIALS ───────────────────────────────────────────── */
+/* Three equal columns matching COLS/3 character width                    */
+.v3-row-financials {
+  min-height: 36px;
+  border-bottom: 2px solid black;
+}
+
+.v3-fin-cell {
+  flex: 1;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-right: 2px solid black;
+}
+
+.v3-fin-cell:last-child {
+  border-right: none;
+}
+
+/* ── Section 4: TOTAL ─────────────────────────────────────────────────── */
+/* Mirrors GS ! 0x11 (double-width + double-height) + GS B 1 (reverse)   */
+.v3-row-total {
+  min-height: 64px;
+  border-bottom: 2px solid black;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Section 5: PROVIDER + ONLINE ID ────────────────────────────────── */
+.v3-row-provider {
+  min-height: 36px;
+  border-bottom: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+/* ── Section 6: ITEMS ────────────────────────────────────────────────── */
+.v3-row-items {
+  flex: 1;               /* absorbs remaining vertical space */
+  border-bottom: 2px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 10px;
+  min-height: 36px;
+}
+
+.v3-item-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.v3-item-modifier {
+  font-size: 12px;
+  padding-left: 16px;
+  color: #111;
+}
+
+/* ── Section 7: RESTAURANT ───────────────────────────────────────────── */
+/* Mirrors GS ! 0x01 (double-height) + GS B 1 (reverse) + center         */
+.v3-row-restaurant {
+  min-height: 56px;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-}
-
-/*
- * Column widths: proportional to ESC/POS character columns
- * Total usable width = 768 - 72 (sidebar) = 696px
- * ID cell:    ~8 chars  → 108px
- * Phone cell: ~16 chars → 170px
- * Name cell:  flex-1
- */
-.v3-cell-id {
-  width: 108px;
-}
-
-.v3-cell-phone {
-  width: 170px;
-}
-
-.v3-cell-date {
-  width: 76px;
-}
-
-.v3-cell-name {
-  flex: 1;
-}
-
-.v3-cell-branding {
-  flex: 1;
-}
-
-/* Right black cap aligned with sidebar — must match .v3-sidebar width */
-.v3-black-block-top {
-  width: 72px;
-  flex-shrink: 0;
-}
-
-/* Right sidebar: restaurant name (vertical, white-on-black) */
-.v3-sidebar {
-  width: 72px;
-  flex-shrink: 0;
-}
-
-/*
- * Financials block: ~28 ESC/POS chars (18 label + 10 value)
- * 696px × (28/64) ≈ 304px  — give it 230px to leave room for vertical cols
- */
-.v3-financials {
-  width: 230px;
-  flex-shrink: 0;
-}
-
-/* Vertical text columns for provider, online-ID, items */
-.v3-vertical-col {
-  width: 48px;
-  flex-shrink: 0;
-}
-
-/* Items area */
-.v3-items-area {
-  flex: 1;
-  overflow: hidden;
-}
-
-/* Vertical text shared style */
-.v3-vertical-text {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  white-space: nowrap;
-  line-height: 1;
-}
-
-/* Item text allows multi-line (honours \n and long names) */
-.v3-item-text {
-  white-space: pre-line;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  font-family: 'Courier New', Courier, monospace;
-  max-height: 100%;
-  overflow: hidden;
 }

@@ -4,39 +4,35 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 
-// Epson ESC/POS constants
+// ─── ESC/POS byte constants ────────────────────────────────────────────────
 const ESC = 0x1B;
 const GS  = 0x1D;
 const LF  = 0x0A;
-const HT  = 0x09;
+const HT  = 0x09;   // Horizontal Tab
 
-const CMD = {
-  INIT:      [ESC, 0x40],
-  BOLD_ON:   [ESC, 0x45, 0x01],
-  BOLD_OFF:  [ESC, 0x45, 0x00],
-  DBL_SIZE:  [GS,  0x21, 0x11],  // double width + double height
-  NORMAL:    [GS,  0x21, 0x00],
-  REV_ON:    [GS,  0x42, 0x01],  // white-on-black
-  REV_OFF:   [GS,  0x42, 0x00],
-  ALIGN_L:   [ESC, 0x61, 0x00],
-  ALIGN_C:   [ESC, 0x61, 0x01],
-  ALIGN_R:   [ESC, 0x61, 0x02],
-  FEED:      [ESC, 0x64, 0x05],  // feed 5 lines before cut
-  CUT:       [GS,  0x56, 0x42, 0x00],  // full cut
-  // Tab stops at character positions 8, 24, 40, 56
-  TAB_STOPS: [ESC, 0x44, 8, 24, 40, 56, 0x00],
-};
-
-// TM-L90 / TM-L100 label setup: set label length to 2" = 406 dots @ 203 DPI
-// ESC ( L n1=4 n2=0 0x30 0x43 nL nH
-const LABEL_DOTS_2IN = 406;
-const CMD_LABEL_LENGTH = [
-  ESC, 0x28, 0x4C, 0x04, 0x00, 0x30, 0x43,
-  LABEL_DOTS_2IN & 0xFF, (LABEL_DOTS_2IN >> 8) & 0xFF,
-];
-
-// 4" paper @ 203 DPI, Font A (12 dots/char) = ~64 usable chars/line (with margins)
-const CHARS_PER_LINE = 64;
+// ─── Epson standard-mode label constants (203 DPI) ────────────────────────
+//
+//  Physical label: 4" × 2" = 812 × 406 dots
+//  Font A: 12 dots wide × 24 dots tall → 67 chars/line (use 64 with margins)
+//
+//  Dot budget (20-dot compact line spacing):
+//    Header   (double-height, 48 dots)  →  48
+//    Sep  ══  (20 dots)                 →  20
+//    Metrics  (20 dots)                 →  20
+//    Sep  ──  (20 dots)                 →  20
+//    Financials (20 dots)               →  20
+//    Sep  ──  (20 dots)                 →  20
+//    TOTAL    (double-size, 48 dots)    →  48
+//    Sep  ──  (20 dots)                 →  20
+//    Provider + Online ID (20 dots)     →  20
+//    Item name (20 dots each)           →  20
+//    Modifier lines (20 dots each)      →  20
+//    Sep  ──  (20 dots)                 →  20
+//    Restaurant (double-height, 48 dots)→  48
+//  ──────────────────────────────────────────
+//    Base total (1 item, 1 modifier):   → 324 / 406 dots used ✓
+//
+const COLS = 64;  // safe chars per line on 4" paper (Font A, 203 DPI)
 
 @Component({
   imports: [ReactiveFormsModule, CommonModule, MatIconModule],
@@ -47,7 +43,6 @@ export class AppV3LabelDesignerComponent {
   private fb = inject(FormBuilder);
 
   form: FormGroup = this.fb.group({
-    labelSize: ['4x2'],
     id: ['104'],
     orderClass: ['Delivery'],
     customerName: ['John Smith'],
@@ -58,8 +53,8 @@ export class AppV3LabelDesignerComponent {
     createdDate: ['09/25'],
     items: this.fb.array([
       this.fb.group({
-        itemName: ['Trantrum', Validators.required],
-        modifiers: ['2 Salt'],
+        itemName: ['Spicy Chicken Sandwich', Validators.required],
+        modifiers: [ 'No pickles\nExtra spicy\nCut in half'],
       })
     ]),
     subtotal: [10.99],
@@ -83,6 +78,8 @@ export class AppV3LabelDesignerComponent {
     return Number(d.subtotal || 0) + Number(d.tax || 0) + Number(d.deliveryFee || 0);
   });
 
+  escPosBytes = computed(() => this.generateEscPosBytes());
+
   get itemsFormArray(): FormArray {
     return this.form.get('items') as FormArray;
   }
@@ -92,225 +89,284 @@ export class AppV3LabelDesignerComponent {
   }
 
   addItem() {
-    this.itemsFormArray.push(this.fb.group({
-      itemName: ['', Validators.required],
-      modifiers: [''],
-    }));
+    this.itemsFormArray.push(this.fb.group({ itemName: ['', Validators.required], modifiers: [''] }));
   }
 
   removeItem(index: number) {
-    if (this.itemsFormArray.length > 1) {
-      this.itemsFormArray.removeAt(index);
-    }
+    if (this.itemsFormArray.length > 1) this.itemsFormArray.removeAt(index);
   }
 
-  // ─── ESC/POS byte generation ────────────────────────────────────────────────
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
+  private fc(v: number): string {
+    return `$${this.formatCurrency(v)}`;
+  }
+
+  /** Left string + right string separated to fill exactly COLS characters. */
+  private lr(left: string, right: string, cols = COLS): string {
+    const gap = cols - left.length - right.length;
+    return left + (gap > 0 ? ' '.repeat(gap) : ' ') + right;
+  }
+
+  /** Split a string into COLS-wide chunks. */
+  private wrap(s: string, cols = COLS): string[] {
+    const lines: string[] = [];
+    for (let i = 0; i < s.length; i += cols) lines.push(s.substring(i, i + cols));
+    return lines.length ? lines : [''];
+  }
+
+  // ─── Standard ESC/POS generator ───────────────────────────────────────────
+  //
+  //  No Page Mode. Portrait line-by-line. All sections fit on 4"×2" die-cut.
+  //
   generateEscPosBytes(): Uint8Array {
-    const data = this.formData();
+    const d     = this.formData();
     const total = this.calculatedTotal();
     const bytes: number[] = [];
 
-    const p = (...b: number[]) => bytes.push(...b);
-    const t = (s: string) => { for (let i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i) & 0xFF); };
-    const nl = () => bytes.push(LF);
-    const sep = () => { t('-'.repeat(CHARS_PER_LINE)); nl(); };
-    const fc = (v: number) => `$${this.formatCurrency(v)}`;
-    const pad = (s: string, w: number) => String(s).padEnd(w).substring(0, w);
-    const rpad = (s: string, w: number) => String(s).padStart(w).substring(0, w);
+    const p  = (...b: number[]) => bytes.push(...b);
+    const t  = (s: string)      => { for (const c of s) bytes.push(c.charCodeAt(0) & 0xFF); };
+    const nl = ()               => bytes.push(LF);
+    const sep = (ch = '-')      => { t(ch.repeat(COLS)); nl(); };
 
-    // Initialize printer
-    p(...CMD.INIT);
+    const bold     = (on: boolean) => p(ESC, 0x45, on ? 1 : 0);
+    const dblSize  = (w: boolean, h: boolean) =>
+      p(GS, 0x21, (w ? 0x10 : 0x00) | (h ? 0x01 : 0x00));
+    const reverse  = (on: boolean) => p(GS, 0x42, on ? 1 : 0);
+    const align    = (a: 0|1|2)   => p(ESC, 0x61, a);    // 0=L 1=C 2=R
+    const spacing  = (dots: number) => p(ESC, 0x33, dots);
+    const tabStops = (...cols: number[]) => p(ESC, 0x44, ...cols, 0x00);
 
-    // Set label length for TM-L90/L100 (2" = 406 dots)
-    p(...CMD_LABEL_LENGTH);
+    // ── Init ────────────────────────────────────────────────────────────────
+    p(ESC, 0x40);  // ESC @ initialize
 
-    // Set tab stops
-    p(...CMD.TAB_STOPS);
+    // Set label length: 2" = 406 dots at 203 DPI (TM-L90/L100/TM-C)
+    // ESC ( L  n1=4 n2=0  0x30 0x43  nL nH
+    p(ESC, 0x28, 0x4C, 0x04, 0x00, 0x30, 0x43, 406 & 0xFF, (406 >> 8) & 0xFF);
 
-    // ── ROW 1: HEADER ──────────────────────────────────────────────────
-    // Order ID (double size + bold)
-    p(...CMD.DBL_SIZE, ...CMD.BOLD_ON);
-    t(`#${data.id}`);
-    p(...CMD.NORMAL, ...CMD.BOLD_OFF);
-    p(HT);  // tab → phone column
+    // ── SECTION 1: HEADER ───────────────────────────────────────────────────
+    //  #ID..  │  PHONE  │  CUSTOMER NAME
+    //  Double-height bold — 48 dots tall
+    spacing(48);
+    dblSize(false, true);  // GS ! 0x01: single-width, double-height
+    bold(true);
 
-    // Phone number
-    t(pad(String(data.customerPhone), 16));
-    p(HT);  // tab → customer name column
+    // Tab stops: ID field ends at col 9, phone ends at col 26
+    tabStops(9, 26);
 
-    // Customer name (bold)
-    p(...CMD.BOLD_ON);
-    t(String(data.customerName));
-    p(...CMD.BOLD_OFF);
-    nl();
-    sep();
-
-    // ── ROW 2: METRICS ─────────────────────────────────────────────────
-    t(pad(`${data.itemIndex}/${data.itemCount}`, 8));
+    const idTrunc = String(d.id).substring(0, 4) + '..';
+    t(`#${idTrunc}`);
     p(HT);
-    t(pad(String(data.createdTime), 16));
+    t(String(d.customerPhone));
     p(HT);
-    t(pad(String(data.createdDate), 8));
+    t(String(d.customerName));
+
+    bold(false);
+    dblSize(false, false);
+    nl();
+
+    // ── SECTION 2: METRICS ──────────────────────────────────────────────────
+    //  1 of 2  │  11:30 AM  │  09/25  │  Powered by Plum POS
+    spacing(20);
+    sep('=');
+
+    tabStops(9, 20, 27);
+    bold(true);
+    t(`${d.itemIndex} of ${d.itemCount}`);
     p(HT);
-    p(...CMD.ALIGN_C);
-    t(String(data.branding));
-    p(...CMD.ALIGN_L);
+    t(String(d.createdTime));
+    p(HT);
+    t(String(d.createdDate));
+    p(HT);
+    bold(false);
+    t(String(d.branding).substring(0, COLS - 27));
     nl();
     sep();
 
-    // ── ROW 3: FINANCIALS ──────────────────────────────────────────────
-    const finLabel = 18;
-    const finVal   = 10;
+    // ── SECTION 3: FINANCIALS ───────────────────────────────────────────────
+    //  Three financial rows — label left-aligned, value right-aligned per field
+    //  Each field: 21 chars wide (3 equal columns in 64-char line)
+    const finW = Math.floor(COLS / 3);  // 21 chars each
 
-    t(pad(String(data.labelSubtotal), finLabel));
-    t(rpad(fc(Number(data.subtotal)), finVal));
+    const finField = (label: string, val: string, width: number): string => {
+      const l = String(label).padEnd(width - val.length - 1).substring(0, width - val.length - 1);
+      return (l + ' ' + val).substring(0, width);
+    };
+
+    t(finField(d.labelSubtotal,  this.fc(Number(d.subtotal)),     finW));
+    t(finField(d.labelTax,       this.fc(Number(d.tax)),          finW));
+    t(finField(d.labelDelivery,  this.fc(Number(d.deliveryFee)),  finW));
     nl();
-
-    t(pad(String(data.labelTax), finLabel));
-    t(rpad(fc(Number(data.tax)), finVal));
-    nl();
-
-    t(pad(String(data.labelDelivery), finLabel));
-    t(rpad(fc(Number(data.deliveryFee)), finVal));
-    nl();
-
-    // Total — white-on-black, double size, centered
-    p(...CMD.ALIGN_C, ...CMD.REV_ON, ...CMD.BOLD_ON, ...CMD.DBL_SIZE);
-    t(` TOTAL: ${fc(total)} `);
-    p(...CMD.NORMAL, ...CMD.BOLD_OFF, ...CMD.REV_OFF, ...CMD.ALIGN_L);
-    nl();
-
-    // ── PROVIDER / ONLINE ID ───────────────────────────────────────────
     sep();
-    p(...CMD.ALIGN_C);
-    p(...CMD.BOLD_ON);
-    t(String(data.onlineProvider));
-    p(...CMD.BOLD_OFF);
-    nl();
-    t(`ID: ${data.onlineId}`);
-    nl();
-    p(...CMD.ALIGN_L);
 
-    // ── ITEMS ─────────────────────────────────────────────────────────
+    // ── SECTION 4: TOTAL ────────────────────────────────────────────────────
+    //  Double-width + double-height, centered, white-on-black
+    //  GS ! 0x11 = width×2 height×2 → 33 chars/line at double-width
+    spacing(48);
+    dblSize(true, true);
+    align(1);
+    reverse(true);
+    bold(true);
+    t(` TOTAL: ${this.fc(total)} `);
+    bold(false);
+    reverse(false);
+    align(0);
+    dblSize(false, false);
+    nl();
+
+    // ── SECTION 5: PROVIDER + ONLINE ID ─────────────────────────────────────
+    spacing(20);
     sep();
-    const items: { itemName: string; modifiers?: string }[] = data.items || [];
-    items.forEach((item) => {
-      p(...CMD.BOLD_ON);
-      t(`> ${item.itemName}`);
-      p(...CMD.BOLD_OFF);
+    bold(true);
+    t(this.lr(String(d.onlineProvider), `ID: ${d.onlineId}`));
+    bold(false);
+    nl();
+    sep();
+
+    // ── SECTION 6: ITEMS ────────────────────────────────────────────────────
+    const items: { itemName: string; modifiers?: string }[] = d.items || [];
+    items.forEach((item, idx) => {
+      if (idx > 0) sep();
+      bold(true);
+      t(`> ${String(item.itemName).substring(0, COLS - 2)}`);
+      bold(false);
       nl();
       if (item.modifiers) {
-        t(`  ${item.modifiers}`);
-        nl();
+        String(item.modifiers).split('\n').filter(m => m.trim()).forEach(mod => {
+          // Indent modifier lines; wrap if too long
+          const line = `  ${mod.trim()}`;
+          this.wrap(line, COLS).forEach(chunk => { t(chunk); nl(); });
+        });
       }
     });
-
-    // ── RESTAURANT NAME (white-on-black banner) ───────────────────────
     sep();
-    p(...CMD.ALIGN_C, ...CMD.REV_ON, ...CMD.BOLD_ON);
-    t(` ${data.restaurantName} `);
-    p(...CMD.BOLD_OFF, ...CMD.REV_OFF, ...CMD.ALIGN_L);
+
+    // ── SECTION 7: RESTAURANT NAME ──────────────────────────────────────────
+    //  Double-height, centered, white-on-black banner
+    spacing(48);
+    dblSize(false, true);
+    align(1);
+    reverse(true);
+    bold(true);
+    t(` ${String(d.restaurantName).toUpperCase()} `);
+    bold(false);
+    reverse(false);
+    align(0);
+    dblSize(false, false);
     nl();
 
-    // Feed and cut
-    p(...CMD.FEED, ...CMD.CUT);
+    // ── FEED + CUT ──────────────────────────────────────────────────────────
+    spacing(20);          // reset to compact before feed
+    p(ESC, 0x64, 0x03);  // ESC d 3 — feed 3 lines
+    p(GS, 0x56, 0x42, 0x00);  // GS V 66 0 — full cut
 
     return new Uint8Array(bytes);
   }
 
+  // ─── Hex dump (16 bytes/row + ASCII sidebar) ─────────────────────────────
   generateHexDump(): string {
-    const bytes = this.generateEscPosBytes();
+    const bytes = this.escPosBytes();
     const lines: string[] = [
-      `; Epson ESC/POS — 4"×2" Label (203 DPI) — ${bytes.length} bytes`,
-      `; Printer: TM-L90 / TM-L100 / TM-C compatible`,
+      `; Standard ESC/POS — Epson 4"×2" Label — ${bytes.length} bytes`,
+      `; TM-L90 / TM-L100 / TM-C — Portrait, Line-by-Line`,
+      `; Dot budget: Header(48) + 9×Normal(20) + Total(48) + Restaurant(48) = 324/406 dots`,
       '',
     ];
-
     for (let i = 0; i < bytes.length; i += 16) {
       const chunk = Array.from(bytes.slice(i, i + 16));
       const hex   = chunk.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
       const ascii = chunk.map(b => (b >= 0x20 && b <= 0x7E) ? String.fromCharCode(b) : '.').join('');
       lines.push(`${i.toString(16).padStart(4, '0')}: ${hex.padEnd(48)}  |${ascii}|`);
     }
-
     return lines.join('\n');
   }
 
+  // ─── Human-readable annotated commands ───────────────────────────────────
   generateReadablePayload(): string {
-    const data = this.formData();
+    const d     = this.formData();
     const total = this.calculatedTotal();
-    const fc = (v: number) => `$${this.formatCurrency(v)}`;
-    const sep = '-'.repeat(CHARS_PER_LINE);
+    const fc    = (v: number) => this.fc(v);
+    const S     = '='.repeat(COLS);
+    const s     = '-'.repeat(COLS);
+    const finW  = Math.floor(COLS / 3);
 
-    const lines = [
-      `; ── Epson ESC/POS Readable Payload ──────────────────────────────────`,
-      `; Label: 4"×2" Landscape | 203 DPI | TM-L90 / TM-L100 / TM-C series`,
-      `; Generated: ${new Date().toISOString()}`,
-      '',
-      'ESC @                              ; Initialize',
-      'ESC ( L [label length = 406 dots]  ; Set label length to 2" @ 203 DPI',
-      'ESC D [8 24 40 56 0]               ; Set tab stops',
-      '',
-      '; ── ROW 1: HEADER ──────────────────────────────────────────────────',
-      'GS ! 0x11                          ; Double width + double height',
-      'ESC E 1                            ; Bold ON',
-      `#${data.id}`,
-      'GS ! 0x00 | ESC E 0                ; Normal size, Bold OFF',
-      `HT | ${data.customerPhone}`,
-      `HT | ESC E 1 | ${data.customerName} | ESC E 0 | LF`,
-      `; ${sep}`,
-      '',
-      '; ── ROW 2: METRICS ─────────────────────────────────────────────────',
-      `${data.itemIndex}/${data.itemCount}  HT  ${data.createdTime}  HT  ${data.createdDate}  HT  ESC a 1  ${data.branding}  ESC a 0  LF`,
-      `; ${sep}`,
-      '',
-      '; ── ROW 3: FINANCIALS ──────────────────────────────────────────────',
-      `${String(data.labelSubtotal).padEnd(18)}${fc(Number(data.subtotal)).padStart(10)}  LF`,
-      `${String(data.labelTax).padEnd(18)}${fc(Number(data.tax)).padStart(10)}  LF`,
-      `${String(data.labelDelivery).padEnd(18)}${fc(Number(data.deliveryFee)).padStart(10)}  LF`,
-      '',
-      'ESC a 1 | GS B 1 | ESC E 1 | GS ! 0x11  ; Center + Reverse + Bold + ×2',
-      ` TOTAL: ${fc(total)} `,
-      'GS ! 0x00 | ESC E 0 | GS B 0 | ESC a 0',
-      '',
-      `; ${sep}`,
-      '; ── PROVIDER ───────────────────────────────────────────────────────',
-      `ESC a 1 | ESC E 1 | ${data.onlineProvider} | ESC E 0 | LF`,
-      `ID: ${data.onlineId}  LF`,
-      'ESC a 0',
-      `; ${sep}`,
-      '',
-      '; ── ITEMS ──────────────────────────────────────────────────────────',
-      ...(data.items || []).flatMap((item: { itemName: string; modifiers?: string }) => [
-        `ESC E 1 | > ${item.itemName} | ESC E 0 | LF`,
-        ...(item.modifiers ? [`  ${item.modifiers}  LF`] : []),
-      ]),
-      `; ${sep}`,
-      '',
-      '; ── RESTAURANT NAME ─────────────────────────────────────────────────',
-      `ESC a 1 | GS B 1 | ESC E 1 | ${data.restaurantName} | ESC E 0 | GS B 0 | ESC a 0 | LF`,
-      '',
-      '; ── CUT ─────────────────────────────────────────────────────────────',
-      'ESC d 5                            ; Feed 5 lines',
-      'GS V 66 0                          ; Full cut',
-    ];
+    const finField = (label: string, val: string, w: number) => {
+      const l = String(label).padEnd(w - val.length - 1).substring(0, w - val.length - 1);
+      return (l + ' ' + val).substring(0, w);
+    };
 
-    return lines.join('\n');
+    const items: { itemName: string; modifiers?: string }[] = d.items || [];
+    const itemLines: string[] = [];
+    items.forEach((item, idx) => {
+      if (idx > 0) itemLines.push(s);
+      itemLines.push(`> ${item.itemName}`);
+      if (item.modifiers) {
+        String(item.modifiers).split('\n').filter(m => m.trim()).forEach(m => itemLines.push(`  ${m.trim()}`));
+      }
+    });
+
+    return [
+      '; ── Standard ESC/POS — Epson 4"×2" Label ────────────────────────────',
+      '; Mode: Portrait, line-by-line (no Page Mode)',
+      '; Font: A (12×24 dots), 67 chars/line, margins → 64 safe chars',
+      '; Line spacing: ESC 3 20 (20 dots) normal, ESC 3 48 for double-height',
+      '',
+      'ESC @                        ; Initialize',
+      'ESC ( L ... 406 dots         ; Set label length = 2" @ 203 DPI',
+      '',
+      '; ── SECTION 1: HEADER ────── ESC 3 48 · GS ! 0x01 · ESC E 1 ─────────',
+      `#${String(d.id).substring(0,4)}..`.padEnd(9) + String(d.customerPhone).padEnd(17) + d.customerName,
+      '; GS ! 0x00 · ESC E 0',
+      '',
+      '; ── SECTION 2: METRICS ───── ESC 3 20 ──────────────────────────────',
+      S,
+      `${String(d.itemIndex)+' of '+String(d.itemCount)}`.padEnd(9) +
+        String(d.createdTime).padEnd(11) +
+        String(d.createdDate).padEnd(7) +
+        String(d.branding).substring(0, COLS - 27),
+      s,
+      '',
+      '; ── SECTION 3: FINANCIALS ───────────────────────────────────────────',
+      finField(d.labelSubtotal, fc(Number(d.subtotal)), finW) +
+      finField(d.labelTax,      fc(Number(d.tax)),      finW) +
+      finField(d.labelDelivery, fc(Number(d.deliveryFee)), finW),
+      s,
+      '',
+      '; ── SECTION 4: TOTAL ──── ESC 3 48 · GS ! 0x11 · ESC a 1 · GS B 1 ─',
+      this.lr('', ` TOTAL: ${fc(total)} `, COLS).trim(),
+      '; GS B 0 · GS ! 0x00 · ESC a 0',
+      '',
+      '; ── SECTION 5: PROVIDER + ID ─── ESC 3 20 ──────────────────────────',
+      s,
+      this.lr(String(d.onlineProvider), `ID: ${d.onlineId}`),
+      s,
+      '',
+      '; ── SECTION 6: ITEMS ────────────────────────────────────────────────',
+      ...itemLines,
+      s,
+      '',
+      '; ── SECTION 7: RESTAURANT ─── ESC 3 48 · GS ! 0x01 · ESC a 1 · GS B 1',
+      ` ${String(d.restaurantName).toUpperCase()} `.padStart(Math.floor((COLS + String(d.restaurantName).length + 2) / 2)),
+      '; GS B 0 · GS ! 0x00 · ESC a 0',
+      '',
+      '; ── CUT ──────────────────────────────────────────────────────────────',
+      'ESC d 3   ; Feed 3 lines',
+      'GS V 66 0 ; Full cut',
+    ].join('\n');
   }
 
   copyPayload() {
     const mode = this.viewMode();
     const text = mode === 'hex' ? this.generateHexDump() : this.generateReadablePayload();
-    navigator.clipboard.writeText(text).then(() => {
-      alert(`${mode === 'hex' ? 'Hex dump' : 'Readable payload'} copied to clipboard!`);
-    });
+    navigator.clipboard.writeText(text).then(() =>
+      alert(`${mode === 'hex' ? 'Hex dump' : 'ESC/POS commands'} copied!`)
+    );
   }
 
   handlePrint() {
-    const bytes = this.generateEscPosBytes();
-    console.log(`[Epson ESC/POS] ${bytes.length} bytes ready for TM-L90/L100`);
-    console.log('[Hex]', Array.from(bytes).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' '));
-    alert(`${bytes.length} ESC/POS bytes generated — see console.\nConnect via WebUSB or print server to send to printer.`);
+    const bytes = this.escPosBytes();
+    console.log(`[Standard ESC/POS] ${bytes.length} bytes — Epson TM-L90/L100`);
+    console.log('[Hex]', Array.from(bytes).map(b => b.toString(16).padStart(2,'0').toUpperCase()).join(' '));
+    alert(`${bytes.length} bytes ready.\nMode: Standard ESC/POS (portrait, line-by-line).\nSee console — send via WebUSB or HTTP print server.`);
   }
 }
