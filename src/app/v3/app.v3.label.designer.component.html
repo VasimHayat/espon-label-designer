@@ -1,0 +1,327 @@
+<form [formGroup]="form" class="h-screen w-full bg-[#E2E8F0] font-['Helvetica_Neue',Arial,sans-serif] flex flex-col md:grid md:grid-cols-[380px_1fr] md:grid-rows-[60px_1fr] overflow-hidden text-[#1a1a1a]">
+
+  <!-- HEADER -->
+  <header class="md:col-span-2 bg-[#1E293B] text-white flex items-center px-6 justify-between h-[60px] shadow-sm z-10 w-full shrink-0">
+    <h1 class="text-[18px] font-[600] tracking-[0.05em] flex items-center gap-[10px] m-0">
+      <span>EPSON</span> Label Designer
+      <span class="bg-[#8B5CF6] px-[10px] py-[4px] rounded-full text-[10px] uppercase font-bold text-white leading-none">4" × 2" Landscape</span>
+    </h1>
+    <div class="flex gap-[15px] items-center">
+      <span class="text-[12px] opacity-80 hidden sm:inline">TM-L90 / TM-L100 / TM-C</span>
+      <div class="w-[32px] h-[32px] bg-[#334155] rounded-full flex items-center justify-center">
+        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">print</mat-icon>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEFT PANEL: Editor -->
+  <aside class="bg-[#F8FAFC] border-r border-[#CBD5E1] p-[20px] overflow-y-auto md:row-start-2 md:col-start-1 h-full">
+    <div class="max-w-xl mx-auto space-y-[16px]">
+
+      <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-2">Order Details</div>
+
+      <div class="grid grid-cols-2 gap-[10px]">
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Order ID</label>
+          <input type="text" formControlName="id" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Order Class</label>
+          <input type="text" formControlName="orderClass" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Customer Name</label>
+          <input type="text" formControlName="customerName" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Customer Phone</label>
+          <input type="text" formControlName="customerPhone" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Item</label>
+          <div class="flex gap-[6px]">
+            <input type="number" formControlName="itemIndex" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" placeholder="Current" />
+            <span class="flex items-center text-[#64748B] text-[13px]">of</span>
+            <input type="number" formControlName="itemCount" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" placeholder="Total" />
+          </div>
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Time</label>
+          <input type="text" formControlName="createdTime" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Date</label>
+          <input type="text" formControlName="createdDate" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Restaurant Name</label>
+          <input type="text" formControlName="restaurantName" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+      </div>
+
+      <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-4">Provider & Branding</div>
+
+      <div class="grid grid-cols-2 gap-[10px]">
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Online Provider</label>
+          <input type="text" formControlName="onlineProvider" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Online ID</label>
+          <input type="text" formControlName="onlineId" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div class="col-span-2">
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Branding Text</label>
+          <input type="text" formControlName="branding" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+      </div>
+
+      <div class="text-[11px] text-[#64748B] uppercase mb-[8px] font-[700] tracking-wide mt-4">Financials</div>
+
+      <div class="grid grid-cols-2 gap-[10px]">
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Subtotal Label</label>
+          <input type="text" formControlName="labelSubtotal" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Subtotal ($)</label>
+          <input type="number" step="0.01" formControlName="subtotal" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Tax Label</label>
+          <input type="text" formControlName="labelTax" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Tax ($)</label>
+          <input type="number" step="0.01" formControlName="tax" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Delivery Label</label>
+          <input type="text" formControlName="labelDelivery" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+        <div>
+          <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Delivery Fee ($)</label>
+          <input type="number" step="0.01" formControlName="deliveryFee" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-[20px] mb-[8px]">
+        <div class="text-[11px] text-[#64748B] uppercase font-[700] tracking-wide">Items</div>
+        <button type="button" (click)="addItem()" class="text-[#8B5CF6] text-[12px] font-medium flex items-center gap-1 hover:underline cursor-pointer bg-transparent border-none p-0">
+          <mat-icon class="!text-[14px] !w-[14px] !h-[14px] leading-none">add</mat-icon> Add Item
+        </button>
+      </div>
+
+      <div formArrayName="items" class="space-y-[10px] mb-[16px]">
+        @for (item of itemsFormArray.controls; track item; let i = $index) {
+          <div [formGroupName]="i" class="bg-[#F1F5F9] border border-[#CBD5E1] p-[12px] rounded-[6px] relative">
+            <div class="flex justify-between items-center mb-[8px]">
+              <span class="text-[11px] font-[600] text-[#475569]">ITEM {{ i + 1 }}</span>
+              @if (itemsFormArray.length > 1) {
+                <button type="button" (click)="removeItem(i)" class="text-[#64748B] hover:text-red-500 bg-transparent border-none p-0 cursor-pointer flex items-center">
+                  <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">delete</mat-icon>
+                </button>
+              }
+            </div>
+            <div class="grid grid-cols-2 gap-[8px]">
+              <div>
+                <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Item Name</label>
+                <input type="text" formControlName="itemName" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6]" />
+              </div>
+              <div>
+                <label class="text-[12px] text-[#334155] mb-[4px] block font-medium">Modifiers</label>
+                <textarea formControlName="modifiers" rows="3" placeholder="- No Mayo&#10;- Add Pickles" class="w-full px-[10px] py-[8px] border border-[#CBD5E1] rounded-[4px] text-[13px] bg-white focus:outline-none focus:border-[#8B5CF6] resize-y"></textarea>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-[8px] mt-[20px] pb-[40px]">
+        <button type="button" (click)="viewMode.set('preview')"
+          class="rounded-[6px] px-[10px] py-[10px] text-[12px] font-[600] flex-1 flex items-center justify-center gap-1 border transition-colors cursor-pointer"
+          [class.bg-white]="viewMode() !== 'preview'"
+          [class.bg-[#8B5CF6]]="viewMode() === 'preview'"
+          [class.text-white]="viewMode() === 'preview'"
+          [class.text-[#1e293b]]="viewMode() !== 'preview'"
+          [class.border-[#8B5CF6]]="viewMode() === 'preview'"
+          [class.border-[#CBD5E1]]="viewMode() !== 'preview'">
+          <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none">preview</mat-icon>
+          Preview
+        </button>
+        <button type="button" (click)="viewMode.set('readable')"
+          class="rounded-[6px] px-[10px] py-[10px] text-[12px] font-[600] flex-1 flex items-center justify-center gap-1 border transition-colors cursor-pointer"
+          [class.bg-white]="viewMode() !== 'readable'"
+          [class.bg-[#8B5CF6]]="viewMode() === 'readable'"
+          [class.text-white]="viewMode() === 'readable'"
+          [class.text-[#1e293b]]="viewMode() !== 'readable'"
+          [class.border-[#8B5CF6]]="viewMode() === 'readable'"
+          [class.border-[#CBD5E1]]="viewMode() !== 'readable'">
+          <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none">receipt_long</mat-icon>
+          ESC/POS
+        </button>
+        <button type="button" (click)="viewMode.set('hex')"
+          class="rounded-[6px] px-[10px] py-[10px] text-[12px] font-[600] flex-1 flex items-center justify-center gap-1 border transition-colors cursor-pointer"
+          [class.bg-white]="viewMode() !== 'hex'"
+          [class.bg-[#8B5CF6]]="viewMode() === 'hex'"
+          [class.text-white]="viewMode() === 'hex'"
+          [class.text-[#1e293b]]="viewMode() !== 'hex'"
+          [class.border-[#8B5CF6]]="viewMode() === 'hex'"
+          [class.border-[#CBD5E1]]="viewMode() !== 'hex'">
+          <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none">memory</mat-icon>
+          Hex
+        </button>
+      </div>
+
+      <div class="pb-[40px]">
+        <button type="button" (click)="handlePrint()" class="bg-[#8B5CF6] text-white rounded-[6px] px-[12px] py-[10px] text-[13px] font-[600] w-full transition-colors hover:bg-purple-700 flex items-center justify-center gap-2 border-none cursor-pointer">
+          <mat-icon class="!text-[18px] !w-[18px] !h-[18px] leading-none">local_printshop</mat-icon>
+          Print Label
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- RIGHT PANEL: Preview / Raw -->
+  <main class="bg-[#E2E8F0] relative overflow-auto p-[40px] flex items-start justify-center md:col-start-2 md:row-start-2 h-full w-full">
+
+    @if (viewMode() === 'preview') {
+      <!-- Label Preview — correct 4"×2" aspect ratio at ~192 DPI effective -->
+      <div class="v3-label-wrapper">
+        <div class="text-[11px] text-[#64748B] uppercase font-[700] tracking-wide mb-3 text-center">
+          Label Preview — 4" × 2" Landscape (768 × 384 px @ 192 DPI effective)
+        </div>
+
+        <div class="v3-label bg-white shadow-[0_10px_25px_rgba(0,0,0,0.15)] font-['Courier_New',Courier,monospace] text-[#000] border-2 border-black">
+
+          <div class="v3-main-content">
+
+            <!-- Row 1: Header -->
+            <div class="v3-row v3-row-header border-b-2 border-black">
+              <!-- Order ID — double-size equivalent -->
+              <div class="v3-cell v3-cell-id border-r-2 border-black flex items-center justify-center px-2">
+                <span class="text-[26px] font-black leading-none">#{{ formData().id }}</span>
+              </div>
+              <!-- Phone -->
+              <div class="v3-cell v3-cell-phone border-r-2 border-black flex items-center justify-center px-2">
+                <span class="text-[14px] font-bold leading-none">{{ formData().customerPhone }}</span>
+              </div>
+              <!-- Customer Name — bold -->
+              <div class="v3-cell v3-cell-name flex items-center px-3">
+                <span class="text-[20px] font-black leading-none">{{ formData().customerName }}</span>
+              </div>
+              <!-- Black cap (aligns with sidebar) -->
+              <div class="v3-black-block-top bg-black"></div>
+            </div>
+
+            <!-- Row 2: Metrics -->
+            <div class="v3-row v3-row-metrics border-b-2 border-black">
+              <!-- Item count -->
+              <div class="v3-cell v3-cell-id border-r-2 border-black flex items-center justify-center px-2">
+                <span class="text-[13px] font-bold">{{ formData().itemIndex }}/{{ formData().itemCount }}</span>
+              </div>
+              <!-- Time -->
+              <div class="v3-cell v3-cell-phone border-r-2 border-black flex items-center justify-center px-2">
+                <span class="text-[13px] font-bold">{{ formData().createdTime }}</span>
+              </div>
+              <!-- Date -->
+              <div class="v3-cell v3-cell-date border-r-2 border-black flex items-center justify-center px-2">
+                <span class="text-[13px] font-bold">{{ formData().createdDate }}</span>
+              </div>
+              <!-- Branding (center-aligned) -->
+              <div class="v3-cell v3-cell-branding flex items-center justify-center px-3">
+                <span class="text-[11px]">{{ formData().branding }}</span>
+              </div>
+              <div class="v3-black-block-top bg-black"></div>
+            </div>
+
+            <!-- Row 3: Body -->
+            <div class="v3-row v3-row-body">
+
+              <!-- Financials block -->
+              <div class="v3-financials border-r-2 border-black flex flex-col">
+                <div class="flex-1 px-2 py-2 flex flex-col gap-[3px] justify-center">
+                  <div class="flex justify-between text-[12px]">
+                    <span>{{ formData().labelSubtotal }}</span>
+                    <span>${{ formatCurrency(formData().subtotal) }}</span>
+                  </div>
+                  <div class="flex justify-between text-[12px]">
+                    <span>{{ formData().labelTax }}</span>
+                    <span>${{ formatCurrency(formData().tax) }}</span>
+                  </div>
+                  <div class="flex justify-between text-[12px]">
+                    <span>{{ formData().labelDelivery }}</span>
+                    <span>${{ formatCurrency(formData().deliveryFee) }}</span>
+                  </div>
+                </div>
+                <!-- Total — GS B 1 (white on black), double size -->
+                <div class="bg-black text-white flex items-center justify-center py-3 px-2">
+                  <span class="text-[26px] font-black leading-none">${{ formatCurrency(calculatedTotal()) }}</span>
+                </div>
+              </div>
+
+              <!-- Provider column — white-on-black vertical (GS B + ESC V) -->
+              <div class="v3-vertical-col border-r-2 border-black bg-black flex items-center justify-center">
+                <span class="v3-vertical-text text-white text-[12px] font-black">{{ formData().onlineProvider }}</span>
+              </div>
+
+              <!-- Online ID column — vertical -->
+              <div class="v3-vertical-col border-r-2 border-black flex items-center justify-center">
+                <span class="v3-vertical-text text-[12px] font-bold">{{ formData().onlineId }}</span>
+              </div>
+
+              <!-- Items columns — one column per item, vertical text -->
+              <div class="v3-items-area flex flex-1 overflow-hidden">
+                @for (item of formData().items; track $index; let last = $last) {
+                  <div class="flex items-center justify-center flex-1" [class.border-r-2]="!last" [class.border-black]="!last">
+                    <pre class="v3-vertical-text v3-item-text text-[11px] font-bold m-0 p-0 bg-transparent">{{ item.itemName }}{{ item.modifiers ? '\n' + item.modifiers : '' }}</pre>
+                  </div>
+                }
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Right sidebar: Restaurant name — GS B 1 (white-on-black) -->
+          <div class="v3-sidebar bg-black border-l-2 border-black flex items-center justify-center">
+            <span class="v3-vertical-text text-white text-[18px] font-black">{{ formData().restaurantName }}</span>
+          </div>
+
+        </div>
+
+        <!-- Physical size reference -->
+        <div class="mt-3 text-[10px] text-[#94A3B8] text-center">
+          Physical: 4.00" × 2.00" | 203 DPI = 812 × 406 dots | ESC/POS Font A: ~64 chars/line
+        </div>
+      </div>
+
+    } @else if (viewMode() === 'readable') {
+      <!-- Readable ESC/POS commands panel -->
+      <div class="bg-[#1e1e1e] border-l-4 border-[#8B5CF6] text-[#d4d4d4] rounded-lg shadow-2xl p-6 w-[600px] font-mono text-[12px] leading-relaxed whitespace-pre mx-auto mb-auto">
+        <div class="flex items-center justify-between border-b border-[#333] pb-2 mb-4">
+          <div class="text-[#858585] font-[600] uppercase tracking-widest text-[10px]">ESC/POS COMMANDS — Epson TM-L90/L100/TM-C</div>
+          <button (click)="copyPayload()" class="bg-[#333] text-white hover:bg-[#444] transition-colors rounded-[4px] flex gap-1 px-2 py-1 text-[10px] uppercase font-bold cursor-pointer border-none">
+            <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">content_copy</mat-icon> Copy
+          </button>
+        </div>
+        <div class="overflow-x-auto">{{ generateReadablePayload() }}</div>
+      </div>
+
+    } @else {
+      <!-- Hex dump panel -->
+      <div class="bg-[#1e1e1e] border-l-4 border-[#22c55e] text-[#d4d4d4] rounded-lg shadow-2xl p-6 w-[660px] font-mono text-[11px] leading-relaxed whitespace-pre mx-auto mb-auto">
+        <div class="flex items-center justify-between border-b border-[#333] pb-2 mb-4">
+          <div class="text-[#858585] font-[600] uppercase tracking-widest text-[10px]">HEX DUMP — Send to Epson via WebUSB / Print Server</div>
+          <button (click)="copyPayload()" class="bg-[#333] text-white hover:bg-[#444] transition-colors rounded-[4px] flex gap-1 px-2 py-1 text-[10px] uppercase font-bold cursor-pointer border-none">
+            <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">content_copy</mat-icon> Copy Hex
+          </button>
+        </div>
+        <div class="overflow-x-auto">{{ generateHexDump() }}</div>
+      </div>
+    }
+
+  </main>
+
+</form>
