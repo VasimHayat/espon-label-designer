@@ -18,7 +18,7 @@ export const routes: Routes = [
     },
     {
         path: '',
-        redirectTo: '/designer-v3',
+        redirectTo: '/designer',
         pathMatch: 'full'
     }
 ];
