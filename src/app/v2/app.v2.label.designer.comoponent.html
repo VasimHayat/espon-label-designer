@@ -237,14 +237,38 @@
                     <span class="opacity-80 text-[24px]">#</span><input formControlName="id" class="text-[24px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors min-w-[50px] max-w-full font-inherit" [ngClass]="getAlignClass('id')" [style.width.ch]="formData().id ? formData().id.length + 1 : 1" />
                   </div>
                 }
-                @case ('customer') {
-                  <div class="w-full relative group mb-1" [ngClass]="[getAlignClass('customerPhone'), getBoldClass('customerPhone')]">
+                @case ('customerInfoGrid') {
+                  <!-- Single box, 2 rows × 2 cells. Each cell hides independently via the layout panel. -->
+                  <div class="w-full relative group flex flex-col gap-[4px]" [ngClass]="getBoldClass('customerPhone')">
                     <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'customerPhone'}"></ng-container>
-                    <input formControlName="customerPhone" class="w-[80%] max-w-full bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" [ngClass]="getAlignClass('customerPhone')"/>
-                  </div>
-                  <div class="w-full relative group" [ngClass]="[getAlignClass('customerName'), getBoldClass('customerName')]">
-                    <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'customerName'}"></ng-container>
-                    <input formControlName="customerName" class="w-[80%] max-w-full bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" [ngClass]="getAlignClass('customerName')"/>
+                    @if (visibleIds().has('phone') || visibleIds().has('orderType')) {
+                      <div class="flex items-center justify-between gap-[8px]">
+                        @if (visibleIds().has('phone')) {
+                          <input formControlName="customerPhone" class="flex-[2] min-w-0 bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" placeholder="Phone"/>
+                        } @else {
+                          <div class="flex-[2]"></div>
+                        }
+                        @if (visibleIds().has('orderType')) {
+                          <input formControlName="orderClass" class="flex-1 min-w-0 bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 text-right uppercase transition-colors" placeholder="Order Type"/>
+                        } @else {
+                          <div class="flex-1"></div>
+                        }
+                      </div>
+                    }
+                    @if (visibleIds().has('email') || visibleIds().has('provider')) {
+                      <div class="flex items-center justify-between gap-[8px]">
+                        @if (visibleIds().has('email')) {
+                          <input formControlName="customerEmail" class="flex-[2] min-w-0 bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" placeholder="Email"/>
+                        } @else {
+                          <div class="flex-[2]"></div>
+                        }
+                        @if (visibleIds().has('provider')) {
+                          <input formControlName="onlineId" class="flex-1 min-w-0 bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 text-right transition-colors" placeholder="Provider ID"/>
+                        } @else {
+                          <div class="flex-1"></div>
+                        }
+                      </div>
+                    }
                   </div>
                 }
                 @case ('metrics') {
@@ -258,7 +282,7 @@
                   </div>
                   <div class="w-full relative group flex items-center" [ngClass]="[getJustifyClass('createdDate'), getBoldClass('createdDate')]">
                     <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'createdDate'}"></ng-container>
-                    <input formControlName="labelDate" class="w-[50px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <input formControlName="createdDate" class="w-[90px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 ml-1" />
+                    <input formControlName="labelDate" class="w-[50px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <input formControlName="createdDate" class="w-[120px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 ml-1" />
                   </div>
                 }
                 @case ('branding') {
@@ -290,18 +314,9 @@
                     <input formControlName="labelTotal" class="w-[75px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <span class="whitespace-pre"> {{ calculatedTotal() | currency:'USD':'symbol':'1.2-2' }}</span>
                   </div>
                 }
-                @case ('provider') {
-                  <div class="w-full relative group flex items-center" [ngClass]="[getJustifyClass('onlineProvider'), getBoldClass('onlineProvider')]">
-                    <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'onlineProvider'}"></ng-container>
-                    <input formControlName="onlineProvider" class="w-[100px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -ml-1 transition-colors" [ngClass]="getAlignClass('onlineProvider')" placeholder="Provider"/> 
-                    <span class="mx-[2px] opacity-70">-</span> 
-                    <input formControlName="onlineId" class="w-[120px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 transition-colors" [ngClass]="getAlignClass('onlineId')" placeholder="ID"/>
-                  </div>
-                }
                 @case ('items') {
                   <div class="w-full">
-                    <div class="relative inline-block group"><input formControlName="labelItems" class="w-[70px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /></div>
-                    <div class="mt-[10px] flex flex-col gap-[15px] w-full">
+                    <div class="flex flex-col gap-[15px] w-full">
                       @for (item of formData().items; track $index) {
                         <div [ngClass]="{
                           'flex justify-start text-left': item.align === 'left' || !item.align,
@@ -318,12 +333,6 @@
                         </div>
                       }
                     </div>
-                  </div>
-                }
-                @case ('orderClass') {
-                  <div class="w-full relative group flex items-center" [ngClass]="[getJustifyClass('orderClass'), getBoldClass('orderClass')]">
-                    <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'orderClass'}"></ng-container>
-                    <input formControlName="labelOrderType" class="w-[100px] opacity-80 bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <input formControlName="orderClass" class="w-[100px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 ml-1 uppercase transition-colors" [ngClass]="getAlignClass('orderClass')" />
                   </div>
                 }
               }

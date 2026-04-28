@@ -57,16 +57,24 @@ type LabelGapType = 'GAP' | 'BMARK' | 'CONT';
 export class AppV2LabelDesignerComponent {
   private fb = inject(FormBuilder);
 
+  /**
+   * The 4 cells of the customer/order info grid. Each is a stand-alone layout
+   * entry (independently show/hide / reorder) but they collapse into a single
+   * `customerInfoGrid` block at render time so they share one dashed-bordered box.
+   */
+  private readonly INFO_GRID_IDS = new Set(['phone', 'orderType', 'email', 'provider']);
+
   defaultLayout: LayoutSection[] = [
-    { id: 'header',     label: 'Order ID',            hidden: false },
-    { id: 'customer',   label: 'Customer Info',        hidden: false },
-    { id: 'metrics',    label: 'Metrics (Time/Date)',  hidden: false },
-    { id: 'branding',   label: 'Branding (Powered by)',hidden: false },
-    { id: 'subtotals',  label: 'Subtotal & Tax',       hidden: false },
-    { id: 'total',      label: 'Total Amount',         hidden: false },
-    { id: 'provider',   label: 'Provider Info',        hidden: false },
-    { id: 'items',      label: 'Items List',           hidden: false },
-    { id: 'orderClass', label: 'Order Type',           hidden: false }
+    { id: 'header',     label: 'Order ID',                  hidden: false },
+    { id: 'phone',      label: 'Customer Phone',            hidden: false },
+    { id: 'orderType',  label: 'Order Type',                hidden: false },
+    { id: 'email',      label: 'Customer Email',            hidden: false },
+    { id: 'provider',   label: 'Provider Info',             hidden: false },
+    { id: 'metrics',    label: 'Metrics (Time/Date)',       hidden: false },
+    { id: 'branding',   label: 'Branding (Powered by)',     hidden: false },
+    { id: 'subtotals',  label: 'Subtotal & Tax',            hidden: false },
+    { id: 'total',      label: 'Total Amount',              hidden: false },
+    { id: 'items',      label: 'Items List',                hidden: false }
   ];
 
   layoutState = signal<LayoutSection[]>([...this.defaultLayout]);
@@ -76,9 +84,32 @@ export class AppV2LabelDesignerComponent {
     return this.formData()?.enableCustomLayout ? this.layoutState() : this.defaultLayout;
   });
 
-  /** Only visible sections — used in the receipt preview and ESC/POS payload */
-  visibleSections = computed<LayoutSection[]>(() =>
-    this.layoutOptions().filter(s => !s.hidden)
+  /**
+   * Sections used by receipt preview & ESC/POS payload.
+   * The 4 INFO_GRID_IDS are folded into a single virtual `customerInfoGrid`
+   * entry placed at the position of the first visible cell, so the grid
+   * always renders as one box even when individual cells are hidden.
+   */
+  visibleSections = computed<LayoutSection[]>(() => {
+    const visible = this.layoutOptions().filter(s => !s.hidden);
+    const result: LayoutSection[] = [];
+    let gridInjected = false;
+    for (const section of visible) {
+      if (this.INFO_GRID_IDS.has(section.id)) {
+        if (!gridInjected) {
+          result.push({ id: 'customerInfoGrid', label: 'Customer & Order Info', hidden: false });
+          gridInjected = true;
+        }
+      } else {
+        result.push(section);
+      }
+    }
+    return result;
+  });
+
+  /** Per-cell visibility for the customer/order info grid. */
+  visibleIds = computed<Set<string>>(() =>
+    new Set(this.layoutOptions().filter(s => !s.hidden).map(s => s.id))
   );
 
   toggleSectionVisibility(id: string) {
@@ -104,6 +135,7 @@ export class AppV2LabelDesignerComponent {
     orderClass:   ['Delivery'],
     customerName: ['John Doe'],
     customerPhone:['(555) 123-4567'],
+    customerEmail:['john.doe@example.com'],
     itemIndex:    [1],
     itemCount:    [3],
     createdTime:  ['14:30'],
@@ -129,12 +161,12 @@ export class AppV2LabelDesignerComponent {
     labelTax:       ['Tax     :'],
     labelDelivery:  ['Delv Chg:'],
     labelTotal:     ['TOTAL:'],
-    labelItems:     ['ITEMS:'],
     labelOrderType: ['ORDER TYPE:'],
     formats: this.fb.group({
       id:            this.fb.group({ align: ['center'], isBold: [true]  }),
       customerName:  this.fb.group({ align: ['center'], isBold: [false] }),
-      customerPhone: this.fb.group({ align: ['center'], isBold: [false] }),
+      customerPhone: this.fb.group({ align: ['left'],   isBold: [false] }),
+      customerEmail: this.fb.group({ align: ['left'],   isBold: [false] }),
       itemIndex:     this.fb.group({ align: ['left'],   isBold: [false] }),
       itemCount:     this.fb.group({ align: ['left'],   isBold: [false] }),
       createdTime:   this.fb.group({ align: ['left'],   isBold: [false] }),
@@ -262,6 +294,14 @@ export class AppV2LabelDesignerComponent {
   private _align(field: string): string {
     const a = this.getFormat(field, 'align');
     return a === 'center' ? '[CENTER]' : a === 'right' ? '[RIGHT]' : '[LEFT]';
+  }
+
+  /** Format a row with `left` text flush-left and `right` text flush-right within PRINTER_LINE_WIDTH. */
+  private _twoCol(left: string, right: string): string {
+    const l = left ?? '';
+    const r = right ?? '';
+    const padding = Math.max(1, PRINTER_LINE_WIDTH - l.length - r.length);
+    return `${l}${' '.repeat(padding)}${r}`;
   }
 
   /**
@@ -401,12 +441,27 @@ export class AppV2LabelDesignerComponent {
           payload += `[GS_SIZE 0x11]\n${this._bold('id', '#' + (data.id ?? ''))}\n[GS_SIZE 0x00]\n`;
           break;
 
-        case 'customer':
-          payload += emitAlign(this._align('customerPhone'));
-          payload += `${this._bold('customerPhone', data.customerPhone ?? '')}\n`;
-          payload += emitAlign(this._align('customerName'));
-          payload += `${this._bold('customerName', data.customerName ?? '')}\n`;
+        case 'customerInfoGrid': {
+          // 2 rows × 2 cells. Each cell respects its own visibility flag so the
+          // box collapses gracefully when individual cells are hidden.
+          //   Row 1: phone (left)  | order type (right)
+          //   Row 2: email (left)  | provider info (right)
+          const ids = this.visibleIds();
+          const phone     = ids.has('phone')     ? (data.customerPhone ?? '') : '';
+          const orderType = ids.has('orderType') ? (data.orderClass ?? '').toString().toUpperCase() : '';
+          const email     = ids.has('email')     ? (data.customerEmail ?? '') : '';
+          const provider  = ids.has('provider') ? (data.onlineId ?? '') : '';
+
+          const lines: string[] = [];
+          if (ids.has('phone') || ids.has('orderType')) lines.push(this._twoCol(phone, orderType));
+          if (ids.has('email') || ids.has('provider'))  lines.push(this._twoCol(email, provider));
+
+          if (lines.length) {
+            payload += emitAlign('[LEFT]');
+            payload += `${this._bold('customerPhone', lines.join('\n'))}\n`;
+          }
           break;
+        }
 
         case 'metrics':
           // Only emit [ALIGN] when it actually changes between lines
@@ -440,23 +495,9 @@ export class AppV2LabelDesignerComponent {
           payload += `[GS_SIZE 0x01]\n${this._bold('total', `${data.labelTotal ?? ''} $${this.formatCurrency(total)}`)}\n[GS_SIZE 0x00]\n`;
           break;
 
-        case 'provider': {
-          // Combine on one string so bold tags never straddle the separator
-          const providerLine = `${data.onlineProvider ?? ''} - ${data.onlineId ?? ''}`;
-          payload += emitAlign(this._align('onlineProvider'));
-          payload += `${this._bold('onlineProvider', providerLine)}\n`;
-          break;
-        }
-
         case 'items':
-          // Always left-align items section header
           if (lastAlign !== '[LEFT]') { lastAlign = '[LEFT]'; payload += '[LEFT]\n'; }
-          payload += `${data.labelItems ?? ''}\n${itemsBlock}\n`;
-          break;
-
-        case 'orderClass':
-          payload += emitAlign(this._align('orderClass'));
-          payload += `${this._bold('orderClass', `${data.labelOrderType ?? ''} ${data.orderClass ?? ''}`)}\n`;
+          payload += `${itemsBlock}\n`;
           break;
       }
 
