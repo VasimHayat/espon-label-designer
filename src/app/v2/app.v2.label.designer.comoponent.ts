@@ -138,6 +138,7 @@ export class AppV2LabelDesignerComponent {
     customerEmail:['john.doe@example.com'],
     itemIndex:    [1],
     itemCount:    [3],
+    itemDisplay:  ['1 of 3'],
     createdTime:  ['14:30'],
     createdDate:  ['10/12/2023'],
     items: this.fb.array([
@@ -466,7 +467,7 @@ export class AppV2LabelDesignerComponent {
         case 'metrics':
           // Only emit [ALIGN] when it actually changes between lines
           payload += emitAlign(this._align('itemIndex'));
-          payload += `${this._bold('itemIndex', `${data.labelItem ?? ''} ${data.itemIndex} of ${data.itemCount}`)}\n`;
+          payload += `${this._bold('itemIndex', `${data.labelItem ?? ''} ${data.itemDisplay ?? ''}`)}\n`;
           payload += emitAlign(this._align('createdTime'));
           payload += `${this._bold('createdTime', `${data.labelTime ?? ''} ${data.createdTime ?? ''}`)}\n`;
           payload += emitAlign(this._align('createdDate'));

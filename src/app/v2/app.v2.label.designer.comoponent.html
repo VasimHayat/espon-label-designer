@@ -273,7 +273,7 @@
                 @case ('metrics') {
                   <div class="w-full relative group flex items-center mb-1" [ngClass]="[getJustifyClass('itemIndex'), getBoldClass('itemIndex')]">
                     <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'itemIndex'}"></ng-container>
-                    <input formControlName="labelItem" class="w-[45px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <input type="number" formControlName="itemIndex" class="w-[35px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 text-center -mx-[2px]" /> of <input type="number" formControlName="itemCount" class="w-[35px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 text-center ml-[2px]" />
+                    <input formControlName="labelItem" class="w-[50px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 -mx-1 transition-colors" /> <input formControlName="itemDisplay" class="w-[80px] bg-transparent outline-none border border-transparent hover:bg-black/5 focus:bg-[#EBF8FF] focus:border-[#2563EB] rounded px-1 ml-1" />
                   </div>
                   <div class="w-full relative group flex items-center mb-1" [ngClass]="[getJustifyClass('createdTime'), getBoldClass('createdTime')]">
                     <ng-container *ngTemplateOutlet="floatingToolbar; context: {field: 'createdTime'}"></ng-container>
