@@ -226,8 +226,7 @@
           <!-- Receipt Preview -->
           <div class="bg-[#FFFFFF] shadow-[0_10px_25px_rgba(0,0,0,0.1)] px-[30px] py-[40px] font-['Courier_New',Courier,monospace] text-[#000] text-[14px] leading-[1.4] relative flex flex-col mx-auto mb-auto receipt-top-border transition-all duration-300"
                [ngStyle]="labelDimensions()"
-               [class.overflow-hidden]="formData().labelSize !== 'continuous'"
-               [class.overflow-y-auto]="formData().labelSize === 'continuous'">
+               [class.overflow-hidden]="formData().labelSize !== 'continuous'">
             
             @for (section of visibleSections(); track section.id; let last = $last) {
               @switch (section.id) {

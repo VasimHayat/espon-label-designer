@@ -187,7 +187,7 @@ export class AppV2LabelDesignerComponent {
   labelDimensions = computed(() => {
     const size = this.formData()?.labelSize || 'continuous';
     const pxPerInch = 120;
-    if (size === 'continuous') return { width: '380px', minHeight: '650px' };
+    if (size === 'continuous') return { width: '380px' };
     const [w, h] = size.split('x').map(Number);
     return { width: `${w * pxPerInch}px`, height: `${h * pxPerInch}px` };
   });
