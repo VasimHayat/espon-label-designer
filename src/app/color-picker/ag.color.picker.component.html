@@ -1,0 +1,128 @@
+<button type="button"
+        class="ag-cp-trigger"
+        [class.ag-cp-trigger--open]="isOpen()"
+        [class.ag-cp-trigger--disabled]="disabled()"
+        [style.width.px]="triggerSize()"
+        [style.height.px]="triggerSize()"
+        [style.background]="triggerBg()"
+        [attr.aria-label]="triggerTitle()"
+        [attr.aria-haspopup]="'dialog'"
+        [attr.aria-expanded]="isOpen()"
+        [disabled]="disabled()"
+        [title]="triggerTitle()"
+        (click)="toggle()">
+</button>
+
+@if (isOpen()) {
+    <div #popover
+         class="ag-cp-popover"
+         [class.ag-cp-popover--up]="popoverPlacement().above"
+         [class.ag-cp-popover--right]="popoverPlacement().alignRight"
+         [class.ag-cp-popover--ready]="popoverPlacement().ready"
+         [style.top]="popoverPlacement().above ? 'auto' : 'calc(100% + 6px)'"
+         [style.bottom]="popoverPlacement().above ? 'calc(100% + 6px)' : 'auto'"
+         [style.left]="popoverPlacement().alignRight ? 'auto' : '0'"
+         [style.right]="popoverPlacement().alignRight ? '0' : 'auto'"
+         role="dialog"
+         aria-label="Colour picker"
+         (pointerdown)="$event.stopPropagation()">
+
+        <div class="ag-cp">
+
+            <!-- Saturation / Value square -->
+            <div class="ag-cp__sv"
+                 (pointerdown)="onSvPointerDown($event)">
+                <canvas #svCanvas width="256" height="256" class="ag-cp__sv-canvas"></canvas>
+                <div class="ag-cp__sv-cursor"
+                     [style.left.%]="svCursor().x * 100"
+                     [style.top.%]="(1 - svCursor().y) * 100"></div>
+            </div>
+
+            <!-- Vertical slider -->
+            <div class="ag-cp__slider"
+                 (pointerdown)="onSliderPointerDown($event)">
+                <canvas #sliderCanvas width="20" height="256" class="ag-cp__slider-canvas"></canvas>
+                <div class="ag-cp__slider-arrow ag-cp__slider-arrow--left"
+                     [style.top.%]="sliderCursor() * 100"></div>
+                <div class="ag-cp__slider-arrow ag-cp__slider-arrow--right"
+                     [style.top.%]="sliderCursor() * 100"></div>
+            </div>
+
+            <!-- Center column: preview + numeric inputs -->
+            <div class="ag-cp__center">
+                <div class="ag-cp__preview">
+                    <div class="ag-cp__preview-label">new</div>
+                    <div class="ag-cp__preview-swatch ag-cp__preview-swatch--new"
+                         [style.background]="previewNewBg()"></div>
+                    <div class="ag-cp__preview-swatch ag-cp__preview-swatch--current"
+                         [style.background]="previewCurrentBg()"
+                         (click)="restoreOriginal()"
+                         title="Restore original"></div>
+                    <div class="ag-cp__preview-label">current</div>
+                </div>
+
+                <div class="ag-cp__channels">
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'H'" (change)="setMode('H')">
+                        <span class="ag-cp__row-label">H:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="360" step="1"
+                               [value]="hRound()" (input)="onHInput($any($event.target).value)">
+                        <span class="ag-cp__unit">&deg;</span>
+                    </label>
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'S'" (change)="setMode('S')">
+                        <span class="ag-cp__row-label">S:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="100" step="1"
+                               [value]="sRound()" (input)="onSInput($any($event.target).value)">
+                        <span class="ag-cp__unit">%</span>
+                    </label>
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'V'" (change)="setMode('V')">
+                        <span class="ag-cp__row-label">B:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="100" step="1"
+                               [value]="vRound()" (input)="onVInput($any($event.target).value)">
+                        <span class="ag-cp__unit">%</span>
+                    </label>
+
+                    <div class="ag-cp__divider"></div>
+
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'R'" (change)="setMode('R')">
+                        <span class="ag-cp__row-label">R:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="255" step="1"
+                               [value]="rgb().r" (input)="onRInput($any($event.target).value)">
+                        <span class="ag-cp__unit">&nbsp;</span>
+                    </label>
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'G'" (change)="setMode('G')">
+                        <span class="ag-cp__row-label">G:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="255" step="1"
+                               [value]="rgb().g" (input)="onGInput($any($event.target).value)">
+                        <span class="ag-cp__unit">&nbsp;</span>
+                    </label>
+                    <label class="ag-cp__row">
+                        <input type="radio" [attr.name]="radioGroupName" [checked]="mode() === 'B'" (change)="setMode('B')">
+                        <span class="ag-cp__row-label">B:</span>
+                        <input type="number" class="ag-cp__num" min="0" max="255" step="1"
+                               [value]="rgb().b" (input)="onBInput($any($event.target).value)">
+                        <span class="ag-cp__unit">&nbsp;</span>
+                    </label>
+
+                    <label class="ag-cp__row ag-cp__row--hex">
+                        <span class="ag-cp__row-label">#:</span>
+                        <input type="text" class="ag-cp__hex" maxlength="7"
+                               [value]="hex()" (input)="onHexInput($any($event.target).value)"
+                               spellcheck="false" autocapitalize="off" autocomplete="off">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Footer: OK / Cancel -->
+            <div class="ag-cp__footer">
+                <button type="button" class="ag-cp__btn ag-cp__btn--cancel" (click)="cancel()">Cancel</button>
+                <button type="button" class="ag-cp__btn ag-cp__btn--ok"     (click)="confirm()">OK</button>
+            </div>
+
+        </div>
+    </div>
+}
