@@ -1,11 +1,9 @@
-import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
-import { Template } from './types';
-import { KeyValuePipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, computed, input, output, signal } from '@angular/core';
+import { Template, TemplateElement } from './types';
 
 @Component({
   selector: 'app-label-editor',
-  changeDetection: ChangeDetectionStrategy.OnPush, 
-  imports: [KeyValuePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full overflow-hidden bg-white">
       <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
@@ -18,7 +16,7 @@ import { KeyValuePipe } from '@angular/common';
       </div>
       
       <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
-        @for (kv of tpl() | keyvalue; track kv.key) {
+        @for (kv of orderedSections(); track kv.key) {
            <div class="border border-slate-200 rounded group hover:border-slate-300 bg-white overflow-hidden transition-all duration-200">
               <div 
                 class="font-medium p-3 hover:bg-slate-50 cursor-pointer flex justify-between items-center group transition-colors" 
@@ -88,9 +86,20 @@ import { KeyValuePipe } from '@angular/common';
                                 </optgroup>
                              </select>
                           } @else if (el.type === 'newline') {
-                             <input type="text" readonly class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-slate-100 text-slate-400 font-mono w-24 cursor-not-allowed" value="10">
+                             <input
+                                [value]="el.value || '10'"
+                                (input)="updateElementValue(kv.key, $index, $event)"
+                                type="number"
+                                min="0"
+                                placeholder="Space..."
+                                class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow w-24">
                           } @else if (el.type === 'hr') {
-                             <input type="text" readonly class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-slate-100 text-slate-400 font-mono w-24 cursor-not-allowed" value="*">
+                             <input
+                                [value]="el.value || '*'"
+                                (input)="updateElementValue(kv.key, $index, $event)"
+                                type="text"
+                                placeholder="*"
+                                class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow w-full">
                           } @else {
                              <input 
                                 [value]="el.value || ''" 
@@ -148,13 +157,25 @@ import { KeyValuePipe } from '@angular/common';
 export class LabelEditorComponent {
   template = input.required<Template>();
   templateChange = output<Template>();
-  
+
   expanded = signal<Record<string, boolean>>({});
   Object = Object;
+
+  private readonly labelOrder = ['header', 'itemPage', 'modifier', 'page', 'footer'];
+  private readonly receiptOrder = ['header', 'guest', 'item', 'modifier', 'footer'];
 
   tpl() {
      return this.template();
   }
+
+  orderedSections = computed<{ key: string; value: TemplateElement[] }[]>(() => {
+    const tpl = this.template();
+    const keys = Object.keys(tpl);
+    const preferred = tpl['itemPage'] ? this.labelOrder : tpl['item'] ? this.receiptOrder : [];
+    const ordered = preferred.filter(k => keys.includes(k));
+    const extras = keys.filter(k => !ordered.includes(k));
+    return [...ordered, ...extras].map(key => ({ key, value: tpl[key] }));
+  });
   
   toggleSection(key: string) {
     this.expanded.update(e => ({ ...e, [key]: !e[key] }));

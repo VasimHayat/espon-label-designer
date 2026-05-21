@@ -12,7 +12,7 @@ import { Template, RenderedElement } from './types';
             @if (el.renderType === 'text') {
                <span [class]="el.classes">{{ el.text }}</span>
             } @else if (el.renderType === 'hr') {
-               <span [class]="el.classes">----------------------------------------</span>
+               <span [class]="el.classes">{{ el.text }}</span>
             } @else if (el.renderType === 'cutter') {
                <div class="w-full border-t-2 border-dashed border-slate-300 my-4 relative text-left">
                  <span class="absolute right-0 -top-3 text-slate-400 bg-white px-2 py-0.5 text-[10px] font-sans font-bold uppercase tracking-wider">✂ Cut</span>
@@ -68,7 +68,9 @@ export class LabelPreviewComponent {
           linesArr.push({ align: state['align'], elements: currentLine });
           currentLine = [];
         } else if (item.type === 'hr') {
-          currentLine.push({ renderType: 'hr', classes: getClasses(state) });
+          const ch = item.value && item.value.length > 0 ? item.value : '*';
+          const text = ch.repeat(Math.max(1, Math.ceil(40 / ch.length))).slice(0, 40);
+          currentLine.push({ renderType: 'hr', text, classes: getClasses(state) });
         } else if (item.type === 'variable' && item.value) {
           const v = item.value;
           if (tpl[v]) {
