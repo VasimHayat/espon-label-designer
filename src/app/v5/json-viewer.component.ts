@@ -117,6 +117,9 @@ export class V5JsonViewerComponent {
   value = input.required<string>();
   filename = input<string>('data.json');
   canFormat = input<boolean>(true);
+  // Optional error from the parent (e.g. schema-shape validation). Surfaced
+  // in the footer/status row when the JSON itself parses fine.
+  extraError = input<string>('');
   valueChange = output<string>();
 
   copied = signal<boolean>(false);
@@ -132,8 +135,8 @@ export class V5JsonViewerComponent {
     }
   });
 
-  isValid = computed(() => this.parsed().ok);
-  error = computed(() => this.parsed().err || '');
+  isValid = computed(() => this.parsed().ok && !this.extraError());
+  error = computed(() => this.parsed().err || this.extraError() || '');
 
   lineCount = computed(() => this.value().split('\n').length);
   byteCount = computed(() => new Blob([this.value()]).size);

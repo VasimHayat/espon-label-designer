@@ -107,6 +107,13 @@ export class V5LabelPreviewComponent {
         } else if (item.type === 'variable' && item.value) {
           const v = item.value;
           if (tpl[v]) {
+            // A `variable` whose value matches another section name acts as an
+            // *include*. Two naming conventions on the target section gate the
+            // include on a data field:
+            //   sectionName starts with 'if<Var>' -> rendered only when data[Var] is truthy
+            //   sectionName starts with 'ef<Var>' -> rendered only when data[Var] is falsy
+            //   otherwise                          -> always rendered
+            // The frames cap in processSection guards against accidental cycles.
             if (v.startsWith('if')) {
               const checkVar = v.substring(2);
               if (d[checkVar]) processSection(v, frames + 1);

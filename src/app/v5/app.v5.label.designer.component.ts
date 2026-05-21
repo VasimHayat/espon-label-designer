@@ -1,5 +1,5 @@
 import { Component, computed, effect, signal } from "@angular/core";
-import { DesignerConfig, ElementSelection, Template, TemplateElement, TemplateKind } from "./types";
+import { DesignerConfig, ElementSelection, Template, TemplateElement, TemplateKind, isDesignerConfig, isElementLocked } from "./types";
 import { V5LabelPreviewComponent } from "./preview.component";
 import { defaultLabel, defaultReceipt } from "./templates";
 import { INITIAL_MOCK_DATA } from "./mock-data";
@@ -43,6 +43,21 @@ export class AppV5LabelDesignerComponent {
   configJson = computed(() => JSON.stringify(this.config(), null, 2));
   configJsonStr = signal<string>(JSON.stringify({ label: defaultLabel, receipt: defaultReceipt }, null, 2));
 
+  // Surfaces a shape-validation error when the raw JSON parses but doesn't
+  // match the DesignerConfig shape. Parse errors are handled by the viewer.
+  configJsonShapeError = computed<string>(() => {
+    const raw = this.configJsonStr();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return '';
+    }
+    return isDesignerConfig(parsed)
+      ? ''
+      : 'Expected { label: { …sections }, receipt: { …sections } } with valid element types.';
+  });
+
   constructor() {
     effect(() => {
       try {
@@ -80,6 +95,12 @@ export class AppV5LabelDesignerComponent {
   updateCurrentTemplate(tpl: Template) {
     if (this.activeTemplate() === 'label') this.labelTemplate.set(tpl);
     else this.receiptTemplate.set(tpl);
+    // Drop selection if the previously-selected element no longer exists
+    // (e.g. child editor deleted or reordered without our knowledge).
+    const sel = this.selection();
+    if (sel && !tpl[sel.key]?.[sel.index]) {
+      this.selection.set(null);
+    }
   }
 
   resetCurrentTemplate() {
@@ -101,15 +122,22 @@ export class AppV5LabelDesignerComponent {
 
   onConfigJsonChange(value: string) {
     this.configJsonStr.set(value);
+    let parsed: unknown;
     try {
-      const parsed = JSON.parse(value) as Partial<DesignerConfig>;
-      if (parsed && typeof parsed === 'object') {
-        if (parsed.label) this.labelTemplate.set(parsed.label);
-        if (parsed.receipt) this.receiptTemplate.set(parsed.receipt);
-      }
+      parsed = JSON.parse(value);
     } catch {
-      // invalid JSON — keep raw text in the editor but don't update templates
+      // invalid JSON — viewer surfaces parse error, templates stay put.
+      return;
     }
+    // Parseable but wrong shape: keep raw text so the user can fix it, but
+    // don't poison the templates. configJsonShapeError surfaces a hint.
+    if (!isDesignerConfig(parsed)) return;
+    this.labelTemplate.set(parsed.label);
+    this.receiptTemplate.set(parsed.receipt);
+  }
+
+  isElementLocked(type: TemplateElement['type']): boolean {
+    return isElementLocked(type);
   }
 
   onElementSelected(sel: ElementSelection | null) {
@@ -129,7 +157,7 @@ export class AppV5LabelDesignerComponent {
   updateSelectedType(event: Event) {
     const sel = this.selection();
     if (!sel) return;
-    const type = (event.target as HTMLSelectElement).value;
+    const type = (event.target as HTMLSelectElement).value as TemplateElement['type'];
     const tpl = structuredClone(this.currentTemplate());
     const el = tpl[sel.key]?.[sel.index];
     if (!el) return;

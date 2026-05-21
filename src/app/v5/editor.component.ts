@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, computed, input, output, signal } from '@angular/core';
-import { Template, TemplateElement } from './types';
+import { Template, TemplateElement, isElementLocked } from './types';
 
 @Component({
   selector: 'app-v5-label-editor',
@@ -49,32 +49,36 @@ import { Template, TemplateElement } from './types';
               <!-- Section body -->
               @if (expanded()[kv.key]) {
                 <div class="pl-4 pr-3 pb-3 pt-1 space-y-1.5 border-t border-slate-100 bg-[#F5F6F8]/60">
+                  @if (kv.value.length > 0) {
+                    <!-- Column headers (shown once per section) -->
+                    <div class="flex gap-2 items-center px-2.5 pt-1.5">
+                      <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider w-24 shrink-0 pl-3">Type</span>
+                      <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex-1 min-w-0">Value</span>
+                      <span class="w-[68px] shrink-0" aria-hidden="true"></span>
+                    </div>
+                  }
+
                   @for (el of kv.value; track $index) {
                      @let locked = isLocked(el.type);
                      <div
-                        class="flex gap-2 items-start border px-2.5 py-2 rounded-md transition-colors"
+                        class="flex gap-2 items-center border px-2.5 py-2 rounded-md transition-colors"
                         [class]="locked
                           ? 'bg-slate-50/60 border-slate-200'
                           : 'bg-white border-slate-200 hover:border-slate-300'">
 
                         <!-- Type indicator + selector -->
-                        <div class="flex flex-col w-24 gap-1 shrink-0">
-                          <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full ring-2 ring-white shadow-sm" [class]="typeDotClass(el.type)"></span>
-                            Type
-                            @if (locked) {
-                              <svg class="ml-auto text-slate-400" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            }
-                          </span>
+                        <div class="flex items-center gap-1.5 w-24 shrink-0">
+                          <span class="w-1.5 h-1.5 rounded-full ring-2 ring-white shadow-sm shrink-0" [class]="typeDotClass(el.type)"></span>
                           @if (locked) {
-                            <div class="text-[11px] border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-500 font-medium capitalize cursor-not-allowed select-none">
-                              {{ el.type }}
+                            <div class="text-[11px] border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-500 font-medium capitalize cursor-not-allowed select-none flex items-center justify-between gap-1 flex-1 min-w-0">
+                              <span class="truncate">{{ el.type }}</span>
+                              <svg class="text-slate-400 shrink-0" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </div>
                           } @else {
                             <select
                                [value]="el.type"
                                (change)="updateElementType(kv.key, $index, $event)"
-                               class="text-[11px] border border-slate-200 rounded-md px-1.5 py-1 bg-white text-slate-900 focus:ring-2 focus:ring-[#7C1F5C]/20 focus:border-[#7C1F5C] focus:outline-none w-full transition-all">
+                               class="text-[11px] border border-slate-200 rounded-md px-1.5 py-1 bg-white text-slate-900 focus:ring-2 focus:ring-[#7C1F5C]/20 focus:border-[#7C1F5C] focus:outline-none flex-1 min-w-0 transition-all">
                                <option value="token">Token</option>
                                <option value="text">Text</option>
                                <option value="hr">Divider</option>
@@ -83,8 +87,7 @@ import { Template, TemplateElement } from './types';
                         </div>
 
                         <!-- Value editor / read-only display -->
-                        <div class="flex flex-col flex-1 gap-1 min-w-0">
-                          <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Value</span>
+                        <div class="flex-1 min-w-0">
                           @if (el.type === 'variable') {
                              <div class="text-[11px] border border-slate-200 rounded-md px-2 py-1 bg-white cursor-not-allowed select-none flex items-center gap-2 justify-between">
                                <span class="font-mono text-slate-700 truncate" [class.italic]="resolveVariable(el.value) === '—'" [class.text-slate-400]="resolveVariable(el.value) === '—'">{{ resolveVariable(el.value) }}</span>
@@ -132,7 +135,7 @@ import { Template, TemplateElement } from './types';
                         </div>
 
                         <!-- Row actions -->
-                        <div class="flex items-end gap-0.5 pt-[18px] shrink-0">
+                        <div class="flex items-center gap-0.5 shrink-0">
                            <button
                              (click)="moveUp(kv.key, $index)"
                              [disabled]="$index === 0"
@@ -166,12 +169,6 @@ import { Template, TemplateElement } from './types';
               }
            </div>
         }
-
-        @if (!tpl() || Object.keys(tpl()).length === 0) {
-            <div class="text-center py-10 text-slate-500 text-sm">
-              No sections defined.
-            </div>
-        }
       </div>
     </div>
   `
@@ -182,7 +179,6 @@ export class V5LabelEditorComponent {
   templateChange = output<Template>();
 
   expanded = signal<Record<string, boolean>>({});
-  Object = Object;
 
   private readonly labelOrder = ['header', 'itemPage', 'modifier', 'page', 'footer'];
   private readonly receiptOrder = ['header', 'guest', 'item', 'modifier', 'footer'];
@@ -207,10 +203,6 @@ export class V5LabelEditorComponent {
     hr:       'bg-rose-500',
   };
 
-  tpl() {
-    return this.template();
-  }
-
   orderedSections = computed<{ key: string; value: TemplateElement[] }[]>(() => {
     const tpl = this.template();
     const keys = Object.keys(tpl);
@@ -228,8 +220,8 @@ export class V5LabelEditorComponent {
     return this.typeDot[type] || 'bg-slate-400';
   }
 
-  isLocked(type: string) {
-    return type === 'variable' || type === 'newline';
+  isLocked(type: TemplateElement['type']) {
+    return isElementLocked(type);
   }
 
   resolveVariable(key: string | undefined): string {
@@ -243,35 +235,9 @@ export class V5LabelEditorComponent {
     this.expanded.update(e => ({ ...e, [key]: !e[key] }));
   }
 
-  addSection() {
-    const name = prompt('Enter new section name:');
-    if (name && !this.template()[name]) {
-      const newTpl = { ...this.template(), [name]: [] };
-      this.templateChange.emit(newTpl);
-      this.expanded.update(e => ({ ...e, [name]: true }));
-    }
-  }
-
-  removeSection(key: string, event: Event) {
-    event.stopPropagation();
-    if (confirm('Delete section "' + key + '" and all its elements?')) {
-      const newTpl = { ...this.template() };
-      delete newTpl[key];
-      this.templateChange.emit(newTpl);
-    }
-  }
-
-  addElement(key: string, event: Event) {
-    event.stopPropagation();
-    const newTpl = structuredClone(this.template());
-    newTpl[key].push({ type: 'text', value: '' });
-    this.templateChange.emit(newTpl);
-    this.expanded.update(e => ({ ...e, [key]: true }));
-  }
-
   updateElementType(key: string, index: number, event: Event) {
     const select = event.target as HTMLSelectElement;
-    const type = select.value;
+    const type = select.value as TemplateElement['type'];
     const newTpl = structuredClone(this.template());
     const el = newTpl[key][index];
     el.type = type;
