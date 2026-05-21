@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx ng *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:4200/)",
+      "Bash(curl -s http://localhost:4200/)"
     ]
   }
 }

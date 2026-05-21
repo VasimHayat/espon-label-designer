@@ -1,0 +1,558 @@
+<div class="v4-shell min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+
+  <!-- ─── Toast ───────────────────────────────────────────────────────── -->
+  @if (toast(); as t) {
+    <div class="v4-toast" [class.v4-toast--success]="t.type === 'success'"
+         [class.v4-toast--error]="t.type === 'error'"
+         [class.v4-toast--info]="t.type === 'info'">
+      <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">
+        @switch (t.type) {
+          @case ('success') { check_circle }
+          @case ('error') { error }
+          @default { info }
+        }
+      </mat-icon>
+      <span class="text-sm font-medium tracking-wide">{{ t.text }}</span>
+    </div>
+  }
+
+  <!-- ─── Header bar ──────────────────────────────────────────────────── -->
+  <header class="border-b border-slate-800 bg-slate-950 px-6 py-4 flex items-center justify-between shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-tr from-teal-500 to-indigo-600 p-2 rounded-xl text-white shadow-lg">
+        <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">local_printshop</mat-icon>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2 m-0">
+          Thermal Layout Engineer
+          <span class="text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2 py-0.5 rounded-full font-mono">v1.8</span>
+        </h1>
+        <p class="text-xs text-slate-400 m-0">Design, structure, and test receipt blocks for label/POS hardware</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+        <button (click)="setPaperWidth('80mm')"
+                [class]="(paperWidth() === '80mm' ? 'bg-teal-500 text-slate-900' : 'text-slate-400 hover:text-slate-200') + ' px-3 py-1 text-xs font-semibold rounded-md transition'">
+          80mm Roll
+        </button>
+        <button (click)="setPaperWidth('58mm')"
+                [class]="(paperWidth() === '58mm' ? 'bg-teal-500 text-slate-900' : 'text-slate-400 hover:text-slate-200') + ' px-3 py-1 text-xs font-semibold rounded-md transition'">
+          58mm Label
+        </button>
+      </div>
+
+      <button (click)="testPrint()"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold shadow-lg transition bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 hover:opacity-90 active:scale-95">
+        <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">play_arrow</mat-icon>
+        TEST PRINT
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Workspace grid ──────────────────────────────────────────────── -->
+  <div class="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 overflow-hidden">
+
+    <!-- ═══════════ LEFT COL: tabs ═══════════════════════════════════ -->
+    <div class="xl:col-span-4 flex flex-col gap-4 bg-slate-950 border border-slate-800 rounded-xl p-5 overflow-y-auto max-h-[calc(100vh-7.5rem)] shadow-lg">
+
+      <div class="flex border-b border-slate-800 pb-2 mb-2 gap-2">
+        <button (click)="setActiveLeftTab('editor')"
+                [class]="(activeLeftTab() === 'editor' ? 'border-teal-500 text-teal-400' : 'border-transparent text-slate-400 hover:text-slate-200') + ' flex-1 py-2 text-xs font-bold tracking-wider uppercase border-b-2 transition flex items-center justify-center gap-2'">
+          <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">tune</mat-icon>
+          Layout Scope
+        </button>
+        <button (click)="setActiveLeftTab('sandbox')"
+                [class]="(activeLeftTab() === 'sandbox' ? 'border-teal-500 text-teal-400' : 'border-transparent text-slate-400 hover:text-slate-200') + ' flex-1 py-2 text-xs font-bold tracking-wider uppercase border-b-2 transition flex items-center justify-center gap-2'">
+          <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">settings</mat-icon>
+          Sandbox Data
+        </button>
+        <button (click)="setActiveLeftTab('variables')"
+                [class]="(activeLeftTab() === 'variables' ? 'border-teal-500 text-teal-400' : 'border-transparent text-slate-400 hover:text-slate-200') + ' flex-1 py-2 text-xs font-bold tracking-wider uppercase border-b-2 transition flex items-center justify-center gap-2'">
+          <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">help_outline</mat-icon>
+          Variables
+        </button>
+      </div>
+
+      <!-- ── Tab 1: Layout Scope ─────────────────────────────────── -->
+      @if (activeLeftTab() === 'editor') {
+        <div class="flex flex-col gap-4 flex-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Format Section Blocks</h3>
+              <button (click)="addNewSection()"
+                      class="flex items-center gap-1 text-[11px] text-teal-400 hover:text-teal-300 bg-teal-900/20 border border-teal-500/20 px-2 py-0.5 rounded">
+                <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">add</mat-icon>
+                New Block
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-3">
+              Select a section/sub-block of the printer document schema to edit in the visual designer:
+            </p>
+
+            <div class="grid grid-cols-2 gap-1.5 max-h-[190px] overflow-y-auto pr-1 border border-slate-800 p-2 rounded-lg bg-slate-900/50">
+              @for (name of sectionNames(); track name) {
+                <button (click)="setSelectedSection(name)"
+                        [class]="(selectedSection() === name ? 'bg-teal-500/10 text-teal-300 border-teal-500/40 font-semibold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800/80 hover:text-slate-100') + ' text-left px-2.5 py-1.5 rounded text-xs transition flex items-center justify-between border'">
+                  <span class="truncate">{{ name }}</span>
+                  @if (!isCoreSection(name)) {
+                    <span class="text-[9px] bg-slate-800 text-slate-400 px-1 rounded uppercase">sub</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Apply Style Preset</h4>
+            <div class="grid grid-cols-3 gap-2">
+              @for (key of presetKeys; track key) {
+                <button (click)="loadPreset(key)"
+                        class="bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 py-1.5 px-2 rounded text-xs transition">
+                  {{ presetLabels[key] }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 mt-auto">
+            <h4 class="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <mat-icon class="!text-[14px] !w-[14px] !h-[14px] text-teal-400">info</mat-icon>
+              Understanding Prefix Logic
+            </h4>
+            <ul class="text-[11px] text-slate-400 space-y-1.5 mt-1 list-disc pl-3">
+              <li><code class="text-teal-400 font-bold font-mono">if</code>: renders the sub-block if the variable after the prefix is defined.</li>
+              <li><code class="text-teal-400 font-bold font-mono">ef</code>: renders the sub-block ONLY if the variable is NOT defined.</li>
+              <li><code class="text-teal-400 font-bold font-mono">ar</code>: iterates an array and evaluates the sub-block for each entry.</li>
+            </ul>
+          </div>
+        </div>
+      }
+
+      <!-- ── Tab 2: Sandbox ───────────────────────────────────────── -->
+      @if (activeLeftTab() === 'sandbox') {
+        <div class="flex flex-col gap-4 flex-1">
+          <div>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Metadata Variables</h3>
+            <div class="grid grid-cols-2 gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Call Number</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().callnum || ''"
+                       (input)="setMockField('callnum', $any($event.target).value)" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Customer Name</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().customer || ''"
+                       (input)="setMockField('customer', $any($event.target).value)" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Ready Time</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().readyTime || ''"
+                       (input)="setMockField('readyTime', $any($event.target).value)" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Online ID</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().onlineId || ''"
+                       (input)="setMockField('onlineId', $any($event.target).value)" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Online Provider</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().onlineProvider || ''"
+                       (input)="setMockField('onlineProvider', $any($event.target).value)" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Order Class</label>
+                <select class="v4-input"
+                        [value]="mockOrder().orderClass || ''"
+                        (change)="setMockField('orderClass', $any($event.target).value)">
+                  <option value="Dine-In">Dine-In</option>
+                  <option value="Delivery">Delivery</option>
+                  <option value="Takeout">Takeout</option>
+                  <option value="Drive-Thru">Drive-Thru</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Alternate Printer</label>
+                <input type="text" class="v4-input"
+                       [value]="mockOrder().alternate || ''"
+                       (input)="setMockField('alternate', $any($event.target).value)" />
+              </div>
+              <div class="flex flex-col justify-end">
+                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer py-1">
+                  <input type="checkbox"
+                         [checked]="!!mockOrder().paid"
+                         (change)="setMockField('paid', $any($event.target).checked)" />
+                  <span>Paid Flag</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Items &amp; Modifiers</h3>
+              <button (click)="addMockItem()"
+                      class="flex items-center gap-1 text-[11px] text-teal-400 hover:text-teal-300 bg-teal-900/20 border border-teal-500/20 px-2 py-0.5 rounded">
+                <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">add</mat-icon>
+                Add Food Item
+              </button>
+            </div>
+
+            <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              @for (item of mockOrder().items; track $index; let i = $index) {
+                <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 relative">
+                  <button (click)="removeMockItem(i)"
+                          class="absolute top-2.5 right-2.5 p-1 rounded hover:bg-rose-950/40 text-slate-500 hover:text-rose-400 transition"
+                          title="Delete Item">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">delete</mat-icon>
+                  </button>
+
+                  <div class="grid grid-cols-12 gap-2 pr-6">
+                    <div class="col-span-3">
+                      <label class="text-[9px] text-slate-500 font-semibold block uppercase">Qty</label>
+                      <input type="number" class="v4-input"
+                             [value]="item.quantity ?? 1"
+                             (input)="updateMockItem(i, { quantity: +$any($event.target).value || 1 })" />
+                    </div>
+                    <div class="col-span-9">
+                      <label class="text-[9px] text-slate-500 font-semibold block uppercase">Item Name</label>
+                      <input type="text" class="v4-input"
+                             [value]="item.itemName"
+                             (input)="updateMockItem(i, { itemName: $any($event.target).value })" />
+                    </div>
+                    <div class="col-span-12">
+                      <label class="text-[9px] text-slate-500 font-semibold block uppercase">Comment</label>
+                      <input type="text" class="v4-input"
+                             [value]="item.text || ''"
+                             (input)="updateMockItem(i, { text: $any($event.target).value })" />
+                    </div>
+                  </div>
+
+                  <div class="mt-2.5 pt-2 border-t border-slate-800">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[10px] text-slate-400 font-semibold">Modifiers:</span>
+                      <button (click)="addMockModifier(i)"
+                              class="text-[10px] text-teal-400 hover:underline flex items-center gap-0.5">
+                        + Add Mod
+                      </button>
+                    </div>
+                    <div class="space-y-1.5">
+                      @for (mod of item.modifiers || []; track $index; let m = $index) {
+                        <div class="flex items-center gap-1.5">
+                          <input type="text" class="v4-input !py-0.5 !text-[11px]"
+                                 [value]="mod.itemName"
+                                 (input)="updateMockModifier(i, m, { itemName: $any($event.target).value })" />
+                          <button (click)="removeMockModifier(i, m)"
+                                  class="p-0.5 text-slate-500 hover:text-rose-400">
+                            <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">close</mat-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ── Tab 3: Variables ─────────────────────────────────────── -->
+      @if (activeLeftTab() === 'variables') {
+        <div class="flex flex-col gap-4 flex-1">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Standard Variable Registry</h3>
+          <p class="text-xs text-slate-400 mb-2">
+            Use these dynamic variable keys inside your custom layout sections to fetch order attributes:
+          </p>
+
+          <div class="space-y-2 overflow-y-auto max-h-[450px] pr-1">
+            @for (v of variableCatalog; track v.name) {
+              <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg">
+                <div class="flex items-center justify-between mb-1">
+                  <code class="text-xs font-bold font-mono text-teal-400 bg-teal-950/40 px-1.5 py-0.5 rounded border border-teal-800/30">
+                    {{ v.name }}
+                  </code>
+                  <span class="text-[10px] text-slate-500 bg-slate-800 px-1.5 rounded font-mono uppercase">
+                    {{ v.context }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 tracking-wide m-0">{{ v.desc }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════ MIDDLE COL: designer ═══════════════════════════ -->
+    <div class="xl:col-span-5 flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden max-h-[calc(100vh-7.5rem)] shadow-lg">
+
+      <div class="border-b border-slate-800 px-5 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <mat-icon class="!text-[20px] !w-[20px] !h-[20px] text-teal-500">code</mat-icon>
+          <h2 class="text-sm font-bold text-white tracking-wide m-0">
+            Configuration Panel
+            <span class="text-slate-400 font-normal">[{{ selectedSection() }}]</span>
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="setEditorMode('visual')"
+                  [class]="(activeEditorMode() === 'visual' ? 'bg-slate-800 text-teal-400 border-slate-700' : 'text-slate-400 hover:text-slate-200 border-transparent') + ' px-3 py-1 text-xs font-bold rounded-lg transition border'">
+            Visual Designer
+          </button>
+          <button (click)="setEditorMode('raw')"
+                  [class]="(activeEditorMode() === 'raw' ? 'bg-slate-800 text-teal-400 border-slate-700' : 'text-slate-400 hover:text-slate-200 border-transparent') + ' px-3 py-1 text-xs font-bold rounded-lg transition border'">
+            Raw JSON
+          </button>
+        </div>
+      </div>
+
+      @if (activeEditorMode() === 'visual') {
+        <div class="flex-1 overflow-y-auto p-5 space-y-4">
+
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 m-0">Section Stack: {{ selectedSection() }}</h3>
+              <p class="text-[11px] text-slate-400 m-0">Order of operations in this section</p>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-slate-400 font-semibold mr-1">Insert:</span>
+              <button (click)="addOperation('text')" class="v4-add-btn">Text</button>
+              <button (click)="addOperation('variable')" class="v4-add-btn">Variable</button>
+              <button (click)="addOperation('token')" class="v4-add-btn">Style</button>
+              <button (click)="addOperation('newline')" class="v4-add-btn">Feed</button>
+              <button (click)="addOperation('hr')" class="v4-add-btn">HR</button>
+              <button (click)="addOperation('pad')" class="v4-add-btn">Pad</button>
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            @if (activeOps().length === 0) {
+              <div class="py-8 text-center bg-slate-900/40 rounded-xl border border-dashed border-slate-800">
+                <p class="text-sm text-slate-400 m-0">No layout elements in this section.</p>
+                <p class="text-xs text-slate-500 mt-1 m-0">Use the toolbar above to insert blocks.</p>
+              </div>
+            }
+
+            @for (op of activeOps(); track $index; let i = $index; let first = $first; let last = $last) {
+              <div class="v4-op-row" [attr.data-op]="op.type">
+                <span class="v4-op-tag" [attr.data-tag]="op.type">{{ op.type }}</span>
+
+                <div class="flex-1 flex gap-2 items-center">
+                  @switch (op.type) {
+                    @case ('token') {
+                      <select class="v4-input v4-mono"
+                              [value]="op.value"
+                              (change)="updateOperation(i, { value: $any($event.target).value })">
+                        @for (opt of tokenOptions; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      </select>
+                    }
+                    @case ('newline') {
+                      <div class="flex items-center gap-2 flex-1">
+                        <span class="text-xs text-slate-400">Feed:</span>
+                        <input type="range" min="5" max="60" step="5"
+                               [value]="op.value"
+                               (input)="updateOperation(i, { value: $any($event.target).value })"
+                               class="accent-amber-500 flex-1 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+                        <span class="text-xs text-amber-400 font-mono w-10 text-right">{{ op.value }}px</span>
+                      </div>
+                    }
+                    @case ('hr') {
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">Char:</span>
+                        <input type="text" maxlength="1" class="v4-input w-12 text-center"
+                               [value]="op.value"
+                               (input)="updateOperation(i, { value: $any($event.target).value })" />
+                      </div>
+                    }
+                    @case ('pad') {
+                      <div class="flex items-center gap-2 flex-1">
+                        <span class="text-xs text-slate-400">Pad to column:</span>
+                        <input type="number" min="1" max="80" class="v4-input w-20"
+                               [value]="op.value"
+                               (input)="updateOperation(i, { value: $any($event.target).value })" />
+                      </div>
+                    }
+                    @case ('text') {
+                      <input type="text" class="v4-input flex-1"
+                             [value]="op.value"
+                             (input)="updateOperation(i, { value: $any($event.target).value })" />
+                    }
+                    @case ('variable') {
+                      <select class="v4-input v4-mono flex-1"
+                              [value]="op.value"
+                              (change)="updateOperation(i, { value: $any($event.target).value })">
+                        <option value="">-- choose variable --</option>
+                        <optgroup label="Core Variables">
+                          @for (v of variableCatalog; track v.name) {
+                            <option [value]="v.name">{{ v.name }}</option>
+                          }
+                        </optgroup>
+                        <optgroup label="Conditional Sections">
+                          @for (s of conditionalSectionNames(); track s) {
+                            <option [value]="s">{{ s }}</option>
+                          }
+                        </optgroup>
+                      </select>
+                    }
+                  }
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <button (click)="moveOperation(i, -1)" [disabled]="first" class="v4-icon-btn" title="Move up">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">arrow_upward</mat-icon>
+                  </button>
+                  <button (click)="moveOperation(i, 1)" [disabled]="last" class="v4-icon-btn" title="Move down">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">arrow_downward</mat-icon>
+                  </button>
+                  <button (click)="deleteOperation(i)" class="v4-icon-btn hover:!text-rose-400" title="Delete">
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="border-t border-slate-800 pt-4 flex gap-3">
+            <button (click)="exportLayout()"
+                    class="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 rounded-lg text-xs font-semibold transition">
+              <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">download</mat-icon>
+              Export JSON
+            </button>
+            <div class="relative">
+              <input id="v4-import-json" type="file" accept=".json"
+                     class="hidden" (change)="importLayout($event)" />
+              <label for="v4-import-json"
+                     class="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 rounded-lg text-xs font-semibold transition cursor-pointer">
+                <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">upload</mat-icon>
+                Import JSON
+              </label>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- Raw JSON editor -->
+        <div class="flex-1 flex flex-col p-5 overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Live JSON Editor</span>
+            <button (click)="beautifyJson()"
+                    class="text-[11px] text-teal-400 hover:underline flex items-center gap-1 bg-transparent border-none cursor-pointer">
+              <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">refresh</mat-icon>
+              Beautify
+            </button>
+          </div>
+
+          <textarea
+            spellcheck="false"
+            class="flex-1 w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 overflow-y-auto resize-none"
+            [value]="jsonText()"
+            (input)="onJsonInput($any($event.target).value)"></textarea>
+
+          @if (jsonError(); as err) {
+            <div class="mt-3 p-3 bg-rose-950/40 border border-rose-900 rounded-lg text-rose-300 text-xs flex gap-2 items-start">
+              <mat-icon class="!text-[16px] !w-[16px] !h-[16px] mt-0.5 shrink-0">error</mat-icon>
+              <div>
+                <span class="font-bold">Syntax error:</span>
+                <p class="font-mono mt-0.5 m-0">{{ err }}</p>
+              </div>
+            </div>
+          } @else {
+            <div class="mt-3 p-3 bg-teal-950/20 border border-teal-900/30 rounded-lg text-teal-300 text-xs flex gap-2 items-center">
+              <mat-icon class="!text-[16px] !w-[16px] !h-[16px] shrink-0">check_circle</mat-icon>
+              <span class="font-semibold">Valid JSON — layout compiled successfully</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════ RIGHT COL: simulator + hex ═════════════════════ -->
+    <div class="xl:col-span-3 flex flex-col gap-4">
+
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 shadow-lg">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Simulator Engine</span>
+        <p class="text-[11px] text-slate-500 m-0">Live thermal paper preview</p>
+      </div>
+
+      <!-- Paper preview — one paper per label -->
+      <div class="relative bg-slate-900 rounded-xl p-6 border border-slate-800 overflow-y-auto max-h-[60vh] flex flex-col items-center gap-6 min-h-[480px]">
+        @for (page of pages(); track $index; let p = $index) {
+          <div class="flex flex-col items-center gap-1.5 w-full">
+            <div class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">
+              Label {{ p + 1 }} / {{ pages().length }}
+            </div>
+            <div class="v4-paper"
+                 [class.v4-paper--80mm]="paperWidth() === '80mm'"
+                 [class.v4-paper--58mm]="paperWidth() === '58mm'">
+              @for (line of page; track $index) {
+                @switch (line.type) {
+                  @case ('newline') {
+                    <div class="v4-feed" [style.height.px]="line.value"></div>
+                  }
+                  @case ('hr') {
+                    <div class="v4-hr"
+                         [class.v4-wide]="line.size === 'wide'"
+                         [class.v4-red]="line.color === 'red'"
+                         [class.v4-center]="line.align === 'center'"
+                         [class.v4-right]="line.align === 'right'">
+                      {{ hrText(line) }}
+                    </div>
+                  }
+                  @case ('line') {
+                    <div class="v4-line"
+                         [class.v4-center]="line.align === 'center'"
+                         [class.v4-right]="line.align === 'right'">
+                      @for (span of line.spans; track $index) {
+                        <span [class.v4-wide]="span.size === 'wide'"
+                              [class.v4-red]="span.color === 'red'">{{ span.text || ' ' }}</span>
+                      }
+                    </div>
+                  }
+                }
+              }
+            </div>
+            @if (p < pages().length - 1) {
+              <div class="v4-cut-indicator">&#9986;&nbsp;&nbsp;cut here</div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ESC/POS hex stream -->
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col overflow-hidden max-h-[300px]">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <mat-icon class="!text-[16px] !w-[16px] !h-[16px] text-amber-500">memory</mat-icon>
+            ESC/POS Hex Byte-Stream
+          </span>
+          <button (click)="copyHex()"
+                  class="text-[10px] text-teal-400 hover:underline flex items-center gap-1 bg-teal-950/40 border border-teal-900/30 px-1.5 py-0.5 rounded">
+            <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">content_copy</mat-icon>
+            Copy Hex
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto font-mono text-[10px] space-y-1 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+          @for (cmd of escPosStream(); track $index) {
+            <div class="flex gap-2 hover:bg-slate-800/50 p-0.5 rounded transition">
+              <span class="text-teal-400 w-24 shrink-0 font-bold">{{ cmd.hex }}</span>
+              <span class="text-amber-500 w-16 shrink-0">{{ cmd.label }}</span>
+              <span class="text-slate-400 truncate">{{ cmd.cmd }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

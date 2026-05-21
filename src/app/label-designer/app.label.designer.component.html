@@ -1,0 +1,155 @@
+<div class="h-screen flex flex-col font-sans bg-slate-100 overflow-hidden text-slate-800 selection:bg-blue-100">
+   <!-- Header -->
+   <header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center gap-3">
+         <div class="bg-blue-600 text-white p-1.5 rounded shadow-sm w-8 h-8 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
+         </div>
+         <h1 class="text-lg font-semibold tracking-tight text-slate-800 uppercase">LabelFlow <span class="text-slate-400 font-normal">Designer</span></h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+         <div class="border border-slate-200 p-1 rounded-md bg-slate-100 flex">
+            <button 
+               (click)="loadLabel()" 
+               class="px-4 py-1 text-xs font-medium rounded transition-all"
+               [class.bg-white]="activeTemplate() === 'label'"
+               [class.shadow-sm]="activeTemplate() === 'label'"
+               [class.text-blue-700]="activeTemplate() === 'label'"
+               [class.text-slate-500]="activeTemplate() !== 'label'"
+               [class.hover:text-slate-700]="activeTemplate() !== 'label'">
+               Label Template
+            </button>
+            <button 
+               (click)="loadReceipt()" 
+               class="px-4 py-1 text-xs font-medium rounded transition-all"
+               [class.bg-white]="activeTemplate() === 'receipt'"
+               [class.shadow-sm]="activeTemplate() === 'receipt'"
+               [class.text-blue-700]="activeTemplate() === 'receipt'"
+               [class.text-slate-500]="activeTemplate() !== 'receipt'"
+               [class.hover:text-slate-700]="activeTemplate() !== 'receipt'">
+               Receipt Template
+            </button>
+         </div>
+         
+         <div class="w-px h-8 bg-slate-200 mx-2"></div>
+         
+         <button 
+            (click)="exportJson()"
+            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+            Export JSON
+         </button>
+      </div>
+   </header>
+
+   <!-- Main Layout -->
+   <main class="flex-1 flex overflow-hidden">
+      <!-- Left Panel (Editor / Data) -->
+      <section class="w-1/2 flex flex-col border-r border-slate-200 bg-white">
+         <div class="flex border-b border-slate-100 p-2 gap-2 bg-slate-50/50">
+            <button 
+               (click)="activeTab.set('design')"
+               class="flex-1 py-2 font-medium rounded text-sm transition-colors"
+               [class.bg-white]="activeTab() === 'design'"
+               [class.shadow-sm]="activeTab() === 'design'"
+               [class.border]="activeTab() === 'design'"
+               [class.border-slate-200]="activeTab() === 'design'"
+               [class.text-slate-800]="activeTab() === 'design'"
+               [class.text-slate-500]="activeTab() !== 'design'"
+               [class.hover:bg-slate-100]="activeTab() !== 'design'">
+               Designer
+            </button>
+            <button 
+               (click)="activeTab.set('data')"
+               class="flex-1 py-2 font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
+               [class.bg-white]="activeTab() === 'data'"
+               [class.shadow-sm]="activeTab() === 'data'"
+               [class.border]="activeTab() === 'data'"
+               [class.border-slate-200]="activeTab() === 'data'"
+               [class.text-slate-800]="activeTab() === 'data'"
+               [class.text-slate-500]="activeTab() !== 'data'"
+               [class.hover:bg-slate-100]="activeTab() !== 'data'">
+               Preview Data
+            </button>
+            <button 
+               (click)="activeTab.set('json')"
+               class="flex-1 py-2 font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
+               [class.bg-white]="activeTab() === 'json'"
+               [class.shadow-sm]="activeTab() === 'json'"
+               [class.border]="activeTab() === 'json'"
+               [class.border-slate-200]="activeTab() === 'json'"
+               [class.text-slate-800]="activeTab() === 'json'"
+               [class.text-slate-500]="activeTab() !== 'json'"
+               [class.hover:bg-slate-100]="activeTab() !== 'json'">
+               Template JSON
+            </button>
+         </div>
+         
+         <div class="flex-1 overflow-hidden relative">
+            @if (activeTab() === 'design') {
+               <app-label-editor [template]="template()" (templateChange)="template.set($event)"></app-label-editor>
+            } @else if (activeTab() === 'data') {
+               <div class="h-full flex flex-col p-6 space-y-3 bg-slate-50">
+                  <div class="flex flex-col gap-1">
+                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mock Data (JSON)</span>
+                     <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Edit the JSON object below to change the variables available in the template preview.</p>
+                  </div>
+                  <textarea 
+                     [value]="mockDataStr()"
+                     (input)="updateMockData($event)"
+                     class="w-full flex-1 p-4 border border-slate-300 rounded-sm font-mono text-sm shadow-inner bg-slate-900 text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-shadow"
+                     spellcheck="false"
+                  ></textarea>
+               </div>
+            } @else if (activeTab() === 'json') {
+               <div class="h-full flex flex-col p-6 space-y-3 bg-slate-50">
+                  <div class="flex flex-col gap-1">
+                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Template JSON</span>
+                     <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">View or edit the raw JSON of your current template design.</p>
+                  </div>
+                  <textarea 
+                     [value]="templateJson()"
+                     (input)="updateTemplateJson($event)"
+                     class="w-full flex-1 p-4 border border-slate-300 rounded-sm font-mono text-sm shadow-inner bg-slate-800 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-shadow"
+                     spellcheck="false"
+                  ></textarea>
+               </div>
+            }
+         </div>
+      </section>
+      
+      <!-- Right Panel (Canvas) -->
+      <section class="w-1/2 flex flex-col bg-slate-200 relative items-center justify-center overflow-auto p-12 custom-scrollbar">
+         <div class="absolute inset-0 pattern-dots text-slate-300 pointer-events-none opacity-50 z-0"></div>
+         
+         <!-- Preview Scale Info -->
+         <div class="absolute top-4 left-4 bg-white/80 backdrop-blur border border-slate-300 px-3 py-1 rounded text-[11px] font-mono text-slate-600 flex items-center gap-2 z-10">
+            <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span> Live Print Preview
+         </div>
+         
+         <div class="relative flex flex-col items-center">
+            <!-- Paper Roller Shadow -->
+            <div class="w-[400px] h-6 bg-slate-800/10 rounded-full blur-md absolute -top-3 cursor-default"></div>
+            
+            <!-- Output Slot -->
+            <div class="w-[394px] h-2 bg-gradient-to-b from-slate-800 to-slate-600 rounded absolute -top-1 border border-slate-900/50 shadow-inner z-10 cursor-default"></div>
+            
+            <!-- Printer Case Top Part (visual) -->
+            <div class="w-[480px] h-12 bg-white rounded-t-sm absolute -top-12 border border-slate-200 shadow-sm flex items-end justify-center pb-2 cursor-default">
+               <div class="absolute right-4 top-4 flex gap-2">
+                  <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                  <div class="w-2 h-2 rounded-full bg-green-500/20"></div>
+               </div>
+            </div>
+
+            <div class="relative z-0 origin-top bg-white group shadow-2xl rounded-sm border border-slate-300">
+               <!-- Label Hover Border -->
+               <div class="border-2 border-blue-500 absolute -top-1 -left-1 -right-1 -bottom-1 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
+               <app-label-preview [template]="template()" [data]="mockDataObj()"></app-label-preview>
+            </div>
+         </div>
+      </section>
+   </main>
+</div>
+
