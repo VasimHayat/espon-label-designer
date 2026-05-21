@@ -49,13 +49,13 @@ import { Template, RenderedElement, ElementSelection } from './types';
       border-radius: 2px;
     }
     :host ::ng-deep .v5-clickable:hover {
-      outline-color: rgb(59 130 246 / 0.6);
-      background-color: rgb(59 130 246 / 0.06);
+      outline-color: rgb(124 31 92 / 0.45);
+      background-color: rgb(251 230 240 / 0.5);
     }
     :host ::ng-deep .v5-selected {
-      outline: 2px solid rgb(59 130 246);
-      outline-offset: 1px;
-      background-color: rgb(59 130 246 / 0.12);
+      outline: 2px solid rgb(124 31 92);
+      outline-offset: 2px;
+      background-color: rgb(251 230 240 / 0.8);
     }
   `]
 })

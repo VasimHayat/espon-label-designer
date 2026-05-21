@@ -4,12 +4,13 @@ import { V5LabelPreviewComponent } from "./preview.component";
 import { defaultLabel, defaultReceipt } from "./templates";
 import { INITIAL_MOCK_DATA } from "./mock-data";
 import { V5LabelEditorComponent } from "./editor.component";
+import { V5JsonViewerComponent } from "./json-viewer.component";
 
 @Component({
     selector: 'app-v5-label-designer',
     templateUrl: './app.v5.label.designer.component.html',
     styleUrls: ['./app.v5.label.designer.component.scss'],
-    imports: [V5LabelPreviewComponent, V5LabelEditorComponent]
+    imports: [V5LabelPreviewComponent, V5LabelEditorComponent, V5JsonViewerComponent]
 })
 export class AppV5LabelDesignerComponent {
   labelTemplate = signal<Template>(structuredClone(defaultLabel as Template));
@@ -40,6 +41,7 @@ export class AppV5LabelDesignerComponent {
   }));
 
   configJson = computed(() => JSON.stringify(this.config(), null, 2));
+  configJsonStr = signal<string>(JSON.stringify({ label: defaultLabel, receipt: defaultReceipt }, null, 2));
 
   constructor() {
     effect(() => {
@@ -54,6 +56,20 @@ export class AppV5LabelDesignerComponent {
       // clear selection when switching templates so we don't point into the wrong tree
       this.activeTemplate();
       this.selection.set(null);
+    }, { allowSignalWrites: true });
+
+    // Keep raw config JSON in sync with templates when they're edited elsewhere.
+    effect(() => {
+      const cfg = this.config();
+      const raw = this.configJsonStr();
+      try {
+        const parsedRaw = JSON.parse(raw);
+        if (JSON.stringify(parsedRaw) !== JSON.stringify(cfg)) {
+          this.configJsonStr.set(JSON.stringify(cfg, null, 2));
+        }
+      } catch {
+        // raw is invalid — user is mid-edit, do not overwrite their typing
+      }
     }, { allowSignalWrites: true });
   }
 
@@ -79,15 +95,20 @@ export class AppV5LabelDesignerComponent {
     this.mockDataStr.set((event.target as HTMLTextAreaElement).value);
   }
 
-  updateConfigJson(event: Event) {
+  onMockDataChange(value: string) {
+    this.mockDataStr.set(value);
+  }
+
+  onConfigJsonChange(value: string) {
+    this.configJsonStr.set(value);
     try {
-      const parsed = JSON.parse((event.target as HTMLTextAreaElement).value) as Partial<DesignerConfig>;
+      const parsed = JSON.parse(value) as Partial<DesignerConfig>;
       if (parsed && typeof parsed === 'object') {
         if (parsed.label) this.labelTemplate.set(parsed.label);
         if (parsed.receipt) this.receiptTemplate.set(parsed.receipt);
       }
     } catch {
-      // invalid JSON — ignore
+      // invalid JSON — keep raw text in the editor but don't update templates
     }
   }
 
@@ -154,6 +175,14 @@ export class AppV5LabelDesignerComponent {
 
   clearSelection() {
     this.selection.set(null);
+  }
+
+  resolveSelectedVariable(): string {
+    const el = this.selectedElement();
+    if (!el || el.type !== 'variable' || !el.value) return '';
+    const v = this.mockDataObj()[el.value];
+    if (v === undefined || v === null || v === '') return '—';
+    return String(v);
   }
 
   exportJson() {

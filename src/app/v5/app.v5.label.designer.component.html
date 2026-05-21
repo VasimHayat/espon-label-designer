@@ -1,185 +1,229 @@
-<div class="h-screen flex flex-col font-sans bg-slate-100 overflow-hidden text-slate-800 selection:bg-blue-100">
+<div class="h-screen flex flex-col font-sans bg-[#F5F6F8] overflow-hidden text-slate-900 selection:bg-[#FBE6F0] antialiased">
+
    <!-- Header -->
-   <header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-20">
-      <div class="flex items-center gap-3">
-         <div class="bg-blue-600 text-white p-1.5 rounded shadow-sm w-8 h-8 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
+   <header class="h-14 bg-white border-b border-slate-200 px-5 flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center gap-2.5">
+         <div class="w-7 h-7 rounded-md bg-[#7C1F5C] text-white flex items-center justify-center shadow-[0_2px_6px_-1px_rgba(124,31,92,0.3)]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
          </div>
-         <h1 class="text-lg font-semibold tracking-tight text-slate-800 uppercase">Plum Designer <span class="text-slate-400 font-normal">v5</span></h1>
+         <h1 class="text-[15px] font-semibold tracking-tight text-slate-900">Plum</h1>
+         <span class="text-slate-300">/</span>
+         <span class="text-[13px] text-slate-600">Label Designer</span>
       </div>
 
-      <div class="flex items-center gap-4">
-         <div class="border border-slate-200 p-1 rounded-md bg-slate-100 flex">
+      <div class="flex items-center gap-2">
+         <!-- Template switcher (pill tabs with icons) -->
+         <div class="flex items-center gap-1.5">
             <button
                (click)="setActiveTemplate('label')"
-               class="px-4 py-1 text-xs font-medium rounded transition-all"
-               [class.bg-white]="activeTemplate() === 'label'"
-               [class.shadow-sm]="activeTemplate() === 'label'"
-               [class.text-blue-700]="activeTemplate() === 'label'"
-               [class.text-slate-500]="activeTemplate() !== 'label'"
-               [class.hover:text-slate-700]="activeTemplate() !== 'label'">
-               Label Template
+               class="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-md transition-all border"
+               [class]="activeTemplate() === 'label'
+                 ? 'bg-[#7C1F5C] text-white border-[#7C1F5C] shadow-[0_1px_2px_rgba(124,31,92,0.2)]'
+                 : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:text-slate-900'">
+               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+               Label
             </button>
             <button
                (click)="setActiveTemplate('receipt')"
-               class="px-4 py-1 text-xs font-medium rounded transition-all"
-               [class.bg-white]="activeTemplate() === 'receipt'"
-               [class.shadow-sm]="activeTemplate() === 'receipt'"
-               [class.text-blue-700]="activeTemplate() === 'receipt'"
-               [class.text-slate-500]="activeTemplate() !== 'receipt'"
-               [class.hover:text-slate-700]="activeTemplate() !== 'receipt'">
-               Receipt Template
+               class="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-md transition-all border"
+               [class]="activeTemplate() === 'receipt'
+                 ? 'bg-[#7C1F5C] text-white border-[#7C1F5C] shadow-[0_1px_2px_rgba(124,31,92,0.2)]'
+                 : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:text-slate-900'">
+               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2 4 2V8z"/><line x1="14" y1="2" x2="14" y2="8"/><line x1="14" y1="8" x2="20" y2="8"/></svg>
+               Receipt
             </button>
          </div>
 
-         <div class="w-px h-8 bg-slate-200 mx-2"></div>
+         <div class="w-px h-5 bg-slate-200 mx-1"></div>
 
          <button
             (click)="resetCurrentTemplate()"
-            class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded text-xs font-medium transition-colors"
+            class="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-2.5 py-1.5 rounded-md text-[12px] font-medium transition-colors"
             title="Reset the currently active template to defaults">
-            Reset {{ activeTemplate() === 'label' ? 'Label' : 'Receipt' }}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3.4-7"/><path d="M3 4v5h5"/></svg>
+            Reset
          </button>
 
          <button
             (click)="exportJson()"
-            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
-            Export Config
+            class="flex items-center gap-1.5 bg-[#7C1F5C] hover:bg-[#651848] text-white px-3.5 py-1.5 rounded-md text-[12px] font-semibold transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(124,31,92,0.3)]">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Export
          </button>
       </div>
    </header>
 
    <!-- Main Layout -->
    <main class="flex-1 flex overflow-hidden">
-      <!-- Left Panel (Editor / Data / Config JSON) -->
+
+      <!-- Left Panel -->
       <section class="w-1/2 flex flex-col border-r border-slate-200 bg-white">
-         <div class="flex border-b border-slate-100 p-2 gap-2 bg-slate-50/50">
+
+         <!-- Tabs (with plum underline on active, like the screenshot) -->
+         <div class="flex items-end border-b border-slate-200 bg-white px-5 gap-6">
             <button
                (click)="activeTab.set('design')"
-               class="flex-1 py-2 font-medium rounded text-sm transition-colors"
-               [class.bg-white]="activeTab() === 'design'"
-               [class.shadow-sm]="activeTab() === 'design'"
-               [class.border]="activeTab() === 'design'"
-               [class.border-slate-200]="activeTab() === 'design'"
-               [class.text-slate-800]="activeTab() === 'design'"
-               [class.text-slate-500]="activeTab() !== 'design'"
-               [class.hover:bg-slate-100]="activeTab() !== 'design'">
+               class="relative py-3 text-[12px] font-semibold uppercase tracking-wide transition-colors"
+               [class]="activeTab() === 'design' ? 'text-[#7C1F5C]' : 'text-slate-500 hover:text-slate-800'">
                Designer
+               @if (activeTab() === 'design') {
+                  <span class="absolute -bottom-px left-0 right-0 h-[2px] bg-[#7C1F5C] rounded-full"></span>
+               }
             </button>
             <button
                (click)="activeTab.set('data')"
-               class="flex-1 py-2 font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
-               [class.bg-white]="activeTab() === 'data'"
-               [class.shadow-sm]="activeTab() === 'data'"
-               [class.border]="activeTab() === 'data'"
-               [class.border-slate-200]="activeTab() === 'data'"
-               [class.text-slate-800]="activeTab() === 'data'"
-               [class.text-slate-500]="activeTab() !== 'data'"
-               [class.hover:bg-slate-100]="activeTab() !== 'data'">
-               Preview Data
+               class="relative py-3 text-[12px] font-semibold uppercase tracking-wide transition-colors"
+               [class]="activeTab() === 'data' ? 'text-[#7C1F5C]' : 'text-slate-500 hover:text-slate-800'">
+               Mock Data
+               @if (activeTab() === 'data') {
+                  <span class="absolute -bottom-px left-0 right-0 h-[2px] bg-[#7C1F5C] rounded-full"></span>
+               }
             </button>
             <button
                (click)="activeTab.set('json')"
-               class="flex-1 py-2 font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
-               [class.bg-white]="activeTab() === 'json'"
-               [class.shadow-sm]="activeTab() === 'json'"
-               [class.border]="activeTab() === 'json'"
-               [class.border-slate-200]="activeTab() === 'json'"
-               [class.text-slate-800]="activeTab() === 'json'"
-               [class.text-slate-500]="activeTab() !== 'json'"
-               [class.hover:bg-slate-100]="activeTab() !== 'json'">
+               class="relative py-3 text-[12px] font-semibold uppercase tracking-wide transition-colors"
+               [class]="activeTab() === 'json' ? 'text-[#7C1F5C]' : 'text-slate-500 hover:text-slate-800'">
                Config JSON
+               @if (activeTab() === 'json') {
+                  <span class="absolute -bottom-px left-0 right-0 h-[2px] bg-[#7C1F5C] rounded-full"></span>
+               }
             </button>
          </div>
 
-         <div class="flex-1 overflow-hidden relative">
+         <!-- Tab Content -->
+         <div class="flex-1 overflow-hidden relative bg-white">
             @if (activeTab() === 'design') {
                <app-v5-label-editor
                   [template]="currentTemplate()"
+                  [data]="mockDataObj()"
                   (templateChange)="updateCurrentTemplate($event)">
                </app-v5-label-editor>
             } @else if (activeTab() === 'data') {
-               <div class="h-full flex flex-col p-6 space-y-3 bg-slate-50">
-                  <div class="flex flex-col gap-1">
-                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mock Data (JSON)</span>
-                     <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Variables available to both Label and Receipt previews.</p>
+               <div class="h-full flex flex-col p-5 gap-3 bg-white">
+                  <div class="flex items-end justify-between">
+                     <div class="flex flex-col gap-1">
+                        <span class="text-[11px] font-bold tracking-wider text-slate-700 uppercase">Mock data</span>
+                        <p class="text-[12px] text-slate-500">Variables available to both Label and Receipt previews. Edits update the live canvas.</p>
+                     </div>
+                     <span class="text-[10px] font-mono text-[#7C1F5C] bg-[#FBE6F0] border border-[#EFD5E2] px-1.5 py-0.5 rounded">JSON</span>
                   </div>
-                  <textarea
+                  <app-v5-json-viewer
+                     filename="mock-data.json"
                      [value]="mockDataStr()"
-                     (input)="updateMockData($event)"
-                     class="w-full flex-1 p-4 border border-slate-300 rounded-sm font-mono text-sm shadow-inner bg-slate-900 text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-shadow"
-                     spellcheck="false"
-                  ></textarea>
+                     (valueChange)="onMockDataChange($event)">
+                  </app-v5-json-viewer>
                </div>
             } @else if (activeTab() === 'json') {
-               <div class="h-full flex flex-col p-6 space-y-3 bg-slate-50">
-                  <div class="flex flex-col gap-1">
-                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Config JSON</span>
-                     <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Combined config containing both <code>label</code> and <code>receipt</code> templates. Edits here update both designers live.</p>
+               <div class="h-full flex flex-col p-5 gap-3 bg-white">
+                  <div class="flex items-end justify-between">
+                     <div class="flex flex-col gap-1">
+                        <span class="text-[11px] font-bold tracking-wider text-slate-700 uppercase">Config JSON</span>
+                        <p class="text-[12px] text-slate-500">Combined config with <code class="font-mono text-[#7C1F5C] bg-[#FBE6F0] px-1 py-0.5 rounded text-[10px]">label</code> and <code class="font-mono text-[#7C1F5C] bg-[#FBE6F0] px-1 py-0.5 rounded text-[10px]">receipt</code>. Valid edits sync to both designers.</p>
+                     </div>
+                     <span class="text-[10px] font-mono text-[#7C1F5C] bg-[#FBE6F0] border border-[#EFD5E2] px-1.5 py-0.5 rounded">JSON</span>
                   </div>
-                  <textarea
-                     [value]="configJson()"
-                     (input)="updateConfigJson($event)"
-                     class="w-full flex-1 p-4 border border-slate-300 rounded-sm font-mono text-sm shadow-inner bg-slate-800 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-shadow"
-                     spellcheck="false"
-                  ></textarea>
+                  <app-v5-json-viewer
+                     filename="config.json"
+                     [value]="configJsonStr()"
+                     (valueChange)="onConfigJsonChange($event)">
+                  </app-v5-json-viewer>
                </div>
             }
          </div>
       </section>
 
       <!-- Right Panel (Canvas) -->
-      <section class="w-1/2 flex flex-col bg-slate-200 relative items-center overflow-auto p-12 custom-scrollbar" (click)="clearSelection()">
-         <div class="absolute inset-0 pattern-dots text-slate-300 pointer-events-none opacity-50 z-0"></div>
+      <section class="w-1/2 flex flex-col relative overflow-auto custom-scrollbar bg-[#F5F6F8]" (click)="clearSelection()">
 
-         <div class="absolute top-4 left-4 bg-white/80 backdrop-blur border border-slate-300 px-3 py-1 rounded text-[11px] font-mono text-slate-600 flex items-center gap-2 z-10">
-            <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-            Live Preview — {{ activeTemplate() === 'label' ? 'Label' : 'Receipt' }}
-         </div>
+         <!-- Soft warm plum glow -->
+         <div class="pointer-events-none absolute inset-0 z-0"
+              style="background: radial-gradient(700px 400px at 50% -10%, rgba(124,31,92,0.05), transparent 60%);"></div>
+         <!-- Dot grid -->
+         <div class="pointer-events-none absolute inset-0 z-0 opacity-60"
+              style="background-image: radial-gradient(rgb(100 116 139 / 0.18) 1px, transparent 1px); background-size: 18px 18px;"></div>
 
-         <div class="absolute top-4 right-4 z-10 text-[10px] uppercase tracking-widest font-bold text-slate-500 bg-white/80 backdrop-blur border border-slate-300 px-3 py-1 rounded">
-            Click any element to edit
+         <!-- Canvas Toolbar -->
+         <div class="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-slate-200 px-5 py-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-[11px]">
+               <span class="inline-flex items-center gap-1.5 text-slate-700">
+                  <span class="relative flex w-1.5 h-1.5">
+                     <span class="absolute inset-0 rounded-full bg-emerald-500 opacity-60 animate-ping"></span>
+                     <span class="relative w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </span>
+                  <span class="font-medium tracking-tight">Live</span>
+               </span>
+               <span class="text-slate-300">/</span>
+               <span class="font-semibold text-slate-900 tracking-tight">{{ activeTemplate() === 'label' ? 'Label' : 'Receipt' }}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+               Click any element to edit
+            </div>
          </div>
 
          <!-- Floating Inspector -->
          @if (selectedElement(); as el) {
             <div
-               class="absolute top-16 right-4 z-20 bg-white border border-blue-300 rounded shadow-xl w-72 overflow-hidden"
+               class="absolute top-14 right-5 z-20 w-72 overflow-hidden rounded-xl bg-white border border-slate-200 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.18),0_2px_8px_-2px_rgba(15,23,42,0.08),0_0_0_1px_rgba(15,23,42,0.04)]"
                (click)="$event.stopPropagation()">
-               <div class="flex items-center justify-between px-3 py-2 bg-blue-50 border-b border-blue-200">
+               <div class="flex items-center justify-between px-3.5 py-2.5 border-b border-slate-100 bg-[#FBE6F0]/40">
                   <div class="flex items-center gap-2">
-                     <span class="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Inspector</span>
-                     <span class="text-[10px] font-mono text-slate-500">{{ selection()?.key }}[{{ selection()?.index }}]</span>
+                     <div class="w-1 h-3 rounded-sm bg-[#7C1F5C]"></div>
+                     <span class="text-[12px] font-semibold tracking-tight text-slate-900">Inspector</span>
+                     <span class="text-[10px] font-mono text-[#7C1F5C] bg-white border border-[#EFD5E2] px-1.5 py-0.5 rounded">{{ selection()?.key }} · {{ selection()?.index }}</span>
                   </div>
                   <button
                      (click)="clearSelection()"
-                     class="text-slate-400 hover:text-slate-700 text-xs px-1 leading-none"
-                     title="Close">✕</button>
+                     class="text-slate-400 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-white"
+                     title="Close">
+                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                </div>
 
-               <div class="p-3 space-y-3">
-                  <div class="flex flex-col gap-1">
-                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type</span>
-                     <select
-                        [value]="el.type"
-                        (change)="updateSelectedType($event)"
-                        class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
-                        <option value="token">Token</option>
-                        <option value="text">Text</option>
-                        <option value="variable">Variable</option>
-                        <option value="newline">Newline</option>
-                        <option value="hr">Divider</option>
-                     </select>
+               <div class="p-3.5 space-y-3.5">
+                  @let locked = el.type === 'variable' || el.type === 'newline';
+
+                  <div class="flex flex-col gap-1.5">
+                     <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        Type
+                        @if (locked) {
+                           <svg class="text-slate-400" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                           <span class="text-slate-400 normal-case font-medium tracking-normal">read-only</span>
+                        }
+                     </span>
+                     @if (locked) {
+                        <div class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-slate-50 text-slate-600 font-medium capitalize cursor-not-allowed select-none">
+                           {{ el.type }}
+                        </div>
+                     } @else {
+                        <select
+                           [value]="el.type"
+                           (change)="updateSelectedType($event)"
+                           class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-900 focus:ring-2 focus:ring-[#7C1F5C]/20 focus:border-[#7C1F5C] focus:outline-none w-full transition-all">
+                           <option value="token">Token</option>
+                           <option value="text">Text</option>
+                           <option value="hr">Divider</option>
+                        </select>
+                     }
                   </div>
 
-                  <div class="flex flex-col gap-1">
-                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Value</span>
-                     @if (el.type === 'token') {
+                  <div class="flex flex-col gap-1.5">
+                     <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Value</span>
+                     @if (el.type === 'variable') {
+                        <div class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-slate-50 cursor-not-allowed select-none flex items-center gap-2 justify-between">
+                           <span class="font-mono text-slate-700 truncate" [class.italic]="resolveSelectedVariable() === '—'" [class.text-slate-400]="resolveSelectedVariable() === '—'">{{ resolveSelectedVariable() }}</span>
+                           <span class="text-[10px] font-mono text-slate-400 shrink-0 truncate uppercase tracking-wider">{{ el.value }}</span>
+                        </div>
+                     } @else if (el.type === 'newline') {
+                        <div class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-slate-50 text-slate-600 font-mono cursor-not-allowed select-none flex items-center justify-between">
+                           <span>{{ el.value || '10' }}</span>
+                           <span class="text-slate-400 text-[10px]">px</span>
+                        </div>
+                     } @else if (el.type === 'token') {
                         <select
                            [value]="el.value || ''"
                            (change)="updateSelectedValue($event)"
-                           class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
+                           class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-900 focus:ring-2 focus:ring-[#7C1F5C]/20 focus:border-[#7C1F5C] focus:outline-none w-full transition-all">
                            <optgroup label="Fonts & Sizes">
                               <option value="tiny">Tiny</option>
                               <option value="narrow">Narrow (normal)</option>
@@ -198,73 +242,62 @@
                               <option value="right">Right</option>
                            </optgroup>
                            <optgroup label="Commands">
-                              <option value="cutter">✂️ Cutter</option>
+                              <option value="cutter">Cutter</option>
                            </optgroup>
                         </select>
-                     } @else if (el.type === 'newline') {
-                        <input
-                           [value]="el.value || '10'"
-                           (input)="updateSelectedValue($event)"
-                           type="number"
-                           min="0"
-                           class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
-                     } @else if (el.type === 'hr') {
-                        <input
-                           [value]="el.value || '*'"
-                           (input)="updateSelectedValue($event)"
-                           type="text"
-                           placeholder="*"
-                           class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
                      } @else {
                         <input
                            [value]="el.value || ''"
                            (input)="updateSelectedValue($event)"
                            type="text"
-                           placeholder="Enter value..."
-                           class="text-xs border border-slate-200 rounded px-2 py-1.5 bg-white text-slate-800 font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">
+                           [placeholder]="el.type === 'hr' ? '*' : 'Enter value'"
+                           class="text-[12px] border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-900 placeholder:text-slate-400 font-mono focus:ring-2 focus:ring-[#7C1F5C]/20 focus:border-[#7C1F5C] focus:outline-none w-full transition-all">
                      }
                   </div>
 
-                  <div class="flex items-center gap-1 pt-1 border-t border-slate-100">
+                  <div class="grid grid-cols-4 gap-1 pt-3 border-t border-slate-100">
                      <button
                         (click)="moveSelected(-1)"
-                        class="flex-1 text-[10px] uppercase font-bold tracking-wider bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 px-2 py-1.5 rounded"
-                        title="Move Up">▲ Up</button>
+                        class="flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-md transition-colors"
+                        title="Move up">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                     </button>
                      <button
                         (click)="moveSelected(1)"
-                        class="flex-1 text-[10px] uppercase font-bold tracking-wider bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 px-2 py-1.5 rounded"
-                        title="Move Down">▼ Down</button>
+                        class="flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 px-2 py-1.5 rounded-md transition-colors"
+                        title="Move down">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                     </button>
                      <button
                         (click)="insertAfterSelected()"
-                        class="flex-1 text-[10px] uppercase font-bold tracking-wider bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 px-2 py-1.5 rounded"
-                        title="Insert text after">+ After</button>
+                        class="flex items-center justify-center text-[#7C1F5C] hover:bg-[#FBE6F0] border border-[#EFD5E2] px-2 py-1.5 rounded-md transition-colors"
+                        title="Insert text after">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                     </button>
                      <button
                         (click)="deleteSelected()"
-                        class="flex-1 text-[10px] uppercase font-bold tracking-wider bg-white border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 rounded"
-                        title="Delete">✕ Del</button>
+                        class="flex items-center justify-center text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 border border-slate-200 px-2 py-1.5 rounded-md transition-colors"
+                        title="Delete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                     </button>
                   </div>
                </div>
             </div>
          }
 
-         <div class="relative flex flex-col items-center mt-12" (click)="$event.stopPropagation()">
-            <div class="w-[400px] h-6 bg-slate-800/10 rounded-full blur-md absolute -top-3 cursor-default"></div>
-            <div class="w-[394px] h-2 bg-gradient-to-b from-slate-800 to-slate-600 rounded absolute -top-1 border border-slate-900/50 shadow-inner z-10 cursor-default"></div>
-            <div class="w-[480px] h-12 bg-white rounded-t-sm absolute -top-12 border border-slate-200 shadow-sm flex items-end justify-center pb-2 cursor-default">
-               <div class="absolute right-4 top-4 flex gap-2">
-                  <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
-                  <div class="w-2 h-2 rounded-full bg-green-500/20"></div>
+         <!-- Paper -->
+         <div class="relative flex-1 flex items-start justify-center py-20 z-[1]" (click)="$event.stopPropagation()">
+            <div class="relative">
+               <div class="relative bg-white rounded-md shadow-[0_24px_50px_-20px_rgba(15,23,42,0.2),0_8px_16px_-8px_rgba(15,23,42,0.08),0_0_0_1px_rgba(15,23,42,0.05)]">
+                  <app-v5-label-preview
+                     [template]="currentTemplate()"
+                     [data]="mockDataObj()"
+                     [selection]="selection()"
+                     (elementSelected)="onElementSelected($event)">
+                  </app-v5-label-preview>
+                  <div class="absolute -bottom-2 inset-x-0 h-2 z-0"
+                       style="background-image: linear-gradient(135deg, white 25%, transparent 25%), linear-gradient(225deg, white 25%, transparent 25%); background-size: 8px 8px;"></div>
                </div>
-            </div>
-
-            <div class="relative z-0 origin-top bg-white group shadow-2xl rounded-sm border border-slate-300">
-               <div class="border-2 border-blue-500 absolute -top-1 -left-1 -right-1 -bottom-1 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20"></div>
-               <app-v5-label-preview
-                  [template]="currentTemplate()"
-                  [data]="mockDataObj()"
-                  [selection]="selection()"
-                  (elementSelected)="onElementSelected($event)">
-               </app-v5-label-preview>
             </div>
          </div>
       </section>
