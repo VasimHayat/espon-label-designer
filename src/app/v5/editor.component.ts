@@ -8,11 +8,11 @@ import { Template, TemplateElement } from './types';
     <div class="flex flex-col h-full overflow-hidden bg-white">
       <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
         <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Template structure</h2>
-        <button
+        <!-- <button
           (click)="addSection()"
           class="flex items-center gap-1 text-xs uppercase font-bold tracking-wider bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 px-3 py-1.5 rounded transition-colors shadow-sm">
           + Add Section
-        </button>
+        </button> -->
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
@@ -28,7 +28,7 @@ import { Template, TemplateElement } from './types';
                 </div>
 
                 <div class="flex flex-row gap-2">
-                  <button
+                  <!-- <button
                     (click)="addElement(kv.key, $event)"
                     class="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] uppercase font-bold tracking-wider bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 px-2 py-1 rounded"
                     title="Add new element to this section">
@@ -39,7 +39,7 @@ import { Template, TemplateElement } from './types';
                     class="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] uppercase font-bold tracking-wider bg-white border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded"
                     title="Delete section">
                     Delete
-                  </button>
+                  </button> -->
                 </div>
               </div>
 
